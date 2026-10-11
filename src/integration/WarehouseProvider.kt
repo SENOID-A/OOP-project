@@ -1,0 +1,4 @@
+package integration
+
+class WarehouseProvider {
+}
