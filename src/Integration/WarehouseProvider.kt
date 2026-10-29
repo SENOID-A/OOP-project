@@ -1,4 +1,4 @@
-package integration
+package Integration
 
 class WarehouseProvider {
 }
