@@ -1,36 +1,46 @@
 package model
+import location.Location
 
 //Abstract Super Class
-abstract class Vehicle (
-    val vehicleID: String,
-    val latitude: Double,
-    val longitude: Double
+abstract class Vehicle(
+    val vin: Vin,
+    var location: Location? = null,
+    var driver: Driver? = null
 ) {
-    abstract fun getCoordinate(): String
-}
+    var isAssigned: Boolean = false
 
-class Truck (
-    vehicleID: String,
-    latitude: Double,
-    longitude: Double,
-    val vehicleType: String,
-    val status: Boolean,
-): Vehicle (vehicleID, latitude, longitude) {
+    abstract fun getCapacity(): Double
 
-    override fun getCoordinate():  String {
-        return "Truck $vehicleID coordinates: $latitude, $longitude"
+    open fun getInfo(): String {
+        return "VIN: ${vin.number}, " +
+               "Location: ${location.address}, " +
+               "Assigned: $isAssigned"
+    }
+
+    fun updateLocation(location: Location) {
+        this.location = location
     }
 }
 
-class Motorcycle (
-    vehicleID: String,
-    latitude: Double,
-    longitude: Double,
-    val vehicleType: String,
-    val status: Boolean,
-): Vehicle (vehicleID, latitude, longitude) {
-
-    override fun getCoordinate(): String {
-        return "Motorcycle $vehicleID coordinates: $latitude, $longitude"
+class Truck(
+    vin: Vin,
+    location: Location,
+    var payloadCapacity: Double,
+    var numberOfAxles: Int
+) : Vehicle(vin, location) {
+    override fun getCapacity(): Double {
+        return payloadCapacity
     }
+
+    override fun getInfo(): String {
+        return super.getInfo() + ", " +
+               "Payload Capacity: $payloadCapacity, " +
+               "Number of Axles: $numberOfAxles"
+    }
+}
+
+fun main(){
+    truck1 = Truck(Vin("1HGCM82633A123456"), Location("123 Main St"), 5000.0, 4)
+    truck1.getCapacity()
+    truck1.getInfo()
 }
