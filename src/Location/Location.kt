@@ -41,14 +41,14 @@ class WareHouseLocation(
 }
 
 
-//fun main() {
+// fun main() {
 //    val warehouse1 = WareHouseLocation(14.05, 120.40, "123 Warehouse St.", "Main Warehouse")
 //    val warehouse2 = WareHouseLocation(14.08, 120.50, "456 Warehouse Ave.", "Secondary Warehouse")
-//
+
 //    val distanceMeters = warehouse1.distanceTo(warehouse2)
 //    val distanceKm = distanceMeters / 1000.0
-//
+
 //    println(warehouse1.getinfo())
 //    println("Distance: ${String.format("%.2f", distanceMeters)} meters (${String.format("%.2f", distanceKm)} km)")
-//}
+// }
 

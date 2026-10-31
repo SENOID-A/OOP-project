@@ -40,7 +40,7 @@ class Truck(
 }
 
 fun main(){
-    truck1 = Truck(Vin("1HGCM82633A123456"), Location("123 Main St"), 5000.0, 4)
-    truck1.getCapacity()
-    truck1.getInfo()
+    val truck1 = Truck(Vin("1HGCM82633A123456"), Location("123 Main St"), 5000.0, 4)
+    println(truck1.getCapacity())
+    println(truck1.getInfo())
 }
