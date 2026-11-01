@@ -1,4 +1,0 @@
-package Tracking
-
-class TrackingService {
-}
