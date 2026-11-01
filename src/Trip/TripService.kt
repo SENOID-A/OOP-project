@@ -1,21 +1,19 @@
 package trip
+import trip.Trip
+import user.Driver
+import vehicle.VehicleStatus
+import repository.TripRepository
+import repository.VehicleRepository
+import repository.DriverRepository
+import location.Location
 
 import java.time.Instant
-
-/** Result of a trip operation — business rejections are values, not exceptions. */
-sealed interface TripResult<out T> {
-    data class Ok<T>(val value: T) : TripResult<T>
-    data class Rejected(val reason: String) : TripResult<Nothing>
-}
 
 class TripService(
     private val tripRepo: TripRepository,
     private val vehicleRepo: VehicleRepository,
     private val driverRepo: DriverRepository,
-    private val alertRepo: AlertRepository,
 ) {
-
-    // ---------- Commands ----------
 
     fun scheduleTrip(
         vehicleId: String,
@@ -24,22 +22,15 @@ class TripService(
         destination: Location,
         scheduledStart: Instant,
         cargoWeightKg: Double,
-    ): TripResult<Trip> {
+    ): Trip {
         val vehicle = vehicleRepo.findById(vehicleId)
-            ?: return TripResult.Rejected("Vehicle not found: $vehicleId")
+            ?: error("Vehicle not found")
         val driver = driverRepo.findById(driverId)
-            ?: return TripResult.Rejected("Driver not found: $driverId")
+            ?: error("Driver not found")
 
-        if (!vehicle.isAvailable)
-            return TripResult.Rejected("Vehicle ${vehicle.plateNumber} is not available (${vehicle.status})")
-        if (!driver.onDuty)
-            return TripResult.Rejected("Driver ${driver.name} is not on duty")
-        if (cargoWeightKg <= 0 || cargoWeightKg > vehicle.capacityKg)
-            return TripResult.Rejected(
-                "Cargo $cargoWeightKg kg outside allowed range (0, ${vehicle.capacityKg}]"
-            )
-        if (scheduledStart.isBefore(Instant.now().minusSeconds(60)))
-            return TripResult.Rejected("Scheduled start is in the past")
+        require(vehicle.isAvailable) { "Vehicle not available" }
+        require(driver.onDuty == true) { "Driver not on duty" }
+        require(cargoWeightKg <= vehicle.capacityKg) { "Cargo exceeds vehicle capacity" }
 
         val trip = Trip(
             vehicleId = vehicleId,
@@ -48,89 +39,74 @@ class TripService(
             destination = destination,
             scheduledStart = scheduledStart,
             cargoWeightKg = cargoWeightKg,
+            status = TripStatus.SCHEDULED,
+            actualStart = Instant.now()
         )
-        tripRepo.save(trip)
-
-        // Reserve the vehicle — but note: status stays IDLE until startTrip().
-        // If you want explicit reservation, add a RESERVED status in VehicleStatus.
-        return TripResult.Ok(trip)
+        return tripRepo.save(trip)
     }
 
-    fun startTrip(tripId: String): TripResult<Trip> {
+    fun startTrip(tripId: String): Trip {
         val trip = tripRepo.findById(tripId)
-            ?: return TripResult.Rejected("Trip not found: $tripId")
-
-        if (trip.status != TripStatus.SCHEDULED)
-            return TripResult.Rejected("Trip $tripId is not SCHEDULED (was ${trip.status})")
+            ?: error("Trip not found")
+        require(trip.status == TripStatus.SCHEDULED) { "Trip is not scheduled" }
 
         val vehicle = vehicleRepo.findById(trip.vehicleId)
-            ?: return TripResult.Rejected("Vehicle ${trip.vehicleId} no longer exists")
+            ?: error("Vehicle not found")
+        require(vehicle.isAvailable) { "Vehicle not available" }
 
-        if (!vehicle.isAvailable)
-            return TripResult.Rejected(
-                "Vehicle ${vehicle.plateNumber} unavailable at start (${vehicle.status})"
-            )
+        val updateTrip = trip.copy(status = TripStatus.IN_PROGRESS,
+            actualStart = Instant.now())
+//        trip.status = TripStatus.IN_PROGRESS
+//        trip.actualStart = Instant.now()
+        tripRepo.save(trip)
 
-        val started = trip.copy(
-            status = TripStatus.IN_PROGRESS,
-            actualStart = Instant.now(),
-        )
-        tripRepo.save(started)
-        vehicleRepo.save(vehicle.copy(status = VehicleStatus.IN_TRIP))
-        return TripResult.Ok(started)
+        vehicle.status = VehicleStatus.IN_TRIP
+        vehicleRepo.save(vehicle)
+
+        return trip
     }
 
-    fun completeTrip(tripId: String, actualDistanceKm: Double? = null): TripResult<Trip> {
+    fun completeTrip(tripId: String): Trip {
         val trip = tripRepo.findById(tripId)
-            ?: return TripResult.Rejected("Trip not found: $tripId")
+            ?: error("Trip not found")
 
-        if (trip.status != TripStatus.IN_PROGRESS)
-            return TripResult.Rejected("Trip $tripId is not IN_PROGRESS (was ${trip.status})")
+        require(trip.status == TripStatus.IN_PROGRESS) { "Trip is not in progress" }
 
-        val completed = trip.copy(
-            status = TripStatus.COMPLETED,
-            actualEnd = Instant.now(),
-            actualDistanceKm = actualDistanceKm ?: trip.plannedDistanceKm,
-        )
-        tripRepo.save(completed)
+        val updateTrip = trip.copy(status = TripStatus.SCHEDULED,
+            actualEnd = Instant.now())
+//        trip.status = TripStatus.COMPLETED
+//        trip.actualEnd = Instant.now()
+        tripRepo.save(trip)
 
-        vehicleRepo.findById(trip.vehicleId)?.let { v ->
-            vehicleRepo.save(v.copy(status = VehicleStatus.IDLE))
+        val vehicle = vehicleRepo.findById(trip.vehicleId)
+        if (vehicle != null) {
+            vehicle.status = VehicleStatus.IDLE
+            vehicleRepo.save(vehicle)
         }
-        return TripResult.Ok(completed)
+        return trip
     }
 
-    fun cancelTrip(tripId: String, reason: String): TripResult<Trip> {
+    fun cancelTrip(tripId: String): Trip {
         val trip = tripRepo.findById(tripId)
-            ?: return TripResult.Rejected("Trip not found: $tripId")
+            ?: error("Trip not found")
 
-        if (trip.isFinished)
-            return TripResult.Rejected("Trip $tripId already finished (${trip.status})")
-        if (reason.isBlank())
-            return TripResult.Rejected("Cancellation reason required")
-
-        val cancelled = trip.copy(
-            status = TripStatus.CANCELLED,
-            cancellationReason = reason,
-            actualEnd = Instant.now(),
-        )
-        tripRepo.save(cancelled)
-
-        // Free the vehicle only if it was actually in a trip for this booking
-        val v = vehicleRepo.findById(trip.vehicleId)
-        if (v != null && v.status == VehicleStatus.IN_TRIP) {
-            vehicleRepo.save(v.copy(status = VehicleStatus.IDLE))
+        require(trip.status == TripStatus.SCHEDULED || trip.status == TripStatus.IN_PROGRESS) {
+            "Trip cannot be cancelled"
         }
-        return TripResult.Ok(cancelled)
+
+        if (trip.status == TripStatus.IN_PROGRESS) {
+            vehicleRepo.findById(trip.vehicleId)?.let { v ->
+                v.status = VehicleStatus.IDLE
+                vehicleRepo.save(v)
+            }
+        }
+
+        val updateTrip = trip.copy(status = TripStatus.IN_PROGRESS)
+//        trip.status = TripStatus.CANCELLED
+        tripRepo.save(trip)
+        return trip
     }
 
-    // ---------- Queries ----------
-
-    fun activeTrips(): List<Trip> = tripRepo.all().filter { it.isActive }
-
-    fun tripsForVehicle(vehicleId: String): List<Trip> =
-        tripRepo.all().filter { it.vehicleId == vehicleId }
-
-    fun tripsForDriver(driverId: String): List<Trip> =
-        tripRepo.all().filter { it.driverId == driverId }
+    fun activeTrips(): List<Trip> =
+        tripRepo.all().filter { it.status == TripStatus.IN_PROGRESS }
 }

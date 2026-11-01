@@ -6,7 +6,8 @@ class Driver(
     position: String,
     address: String,
     val vehicle: String,
-    val isAssigned: Boolean
+    val isAssigned: Boolean,
+    val onDuty: Boolean?
 ): Staff(staffId, name, position, address) {
 
     private var password: String = "defaultPassword"

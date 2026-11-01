@@ -1,4 +1,5 @@
 package trip
+import location.Location
 
 import java.time.Instant
 import java.util.UUID
