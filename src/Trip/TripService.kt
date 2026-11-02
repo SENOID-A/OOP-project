@@ -110,3 +110,7 @@ class TripService(
     fun activeTrips(): List<Trip> =
         tripRepo.all().filter { it.status == TripStatus.IN_PROGRESS }
 }
+
+fun main() {
+
+}

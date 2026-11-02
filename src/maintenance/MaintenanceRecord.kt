@@ -1,0 +1,4 @@
+package maintenance
+
+class MaintenanceRecord {
+}
