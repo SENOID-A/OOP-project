@@ -1,6 +1,5 @@
 package trip
-import trip.Trip
-import user.Driver
+
 import vehicle.VehicleStatus
 import repository.TripRepository
 import repository.VehicleRepository
@@ -39,8 +38,7 @@ class TripService(
             destination = destination,
             scheduledStart = scheduledStart,
             cargoWeightKg = cargoWeightKg,
-            status = TripStatus.SCHEDULED,
-            actualStart = Instant.now()
+            status = TripStatus.SCHEDULED
         )
         return tripRepo.save(trip)
     }
@@ -56,14 +54,12 @@ class TripService(
 
         val updateTrip = trip.copy(status = TripStatus.IN_PROGRESS,
             actualStart = Instant.now())
-//        trip.status = TripStatus.IN_PROGRESS
-//        trip.actualStart = Instant.now()
-        tripRepo.save(trip)
+        tripRepo.save(updateTrip)
 
         vehicle.status = VehicleStatus.IN_TRIP
         vehicleRepo.save(vehicle)
 
-        return trip
+        return updateTrip
     }
 
     fun completeTrip(tripId: String): Trip {
@@ -72,18 +68,16 @@ class TripService(
 
         require(trip.status == TripStatus.IN_PROGRESS) { "Trip is not in progress" }
 
-        val updateTrip = trip.copy(status = TripStatus.SCHEDULED,
+        val updateTrip = trip.copy(status = TripStatus.COMPLETED,
             actualEnd = Instant.now())
-//        trip.status = TripStatus.COMPLETED
-//        trip.actualEnd = Instant.now()
-        tripRepo.save(trip)
+        tripRepo.save(updateTrip)
 
         val vehicle = vehicleRepo.findById(trip.vehicleId)
         if (vehicle != null) {
             vehicle.status = VehicleStatus.IDLE
             vehicleRepo.save(vehicle)
         }
-        return trip
+        return updateTrip
     }
 
     fun cancelTrip(tripId: String): Trip {
@@ -101,16 +95,12 @@ class TripService(
             }
         }
 
-        val updateTrip = trip.copy(status = TripStatus.IN_PROGRESS)
-//        trip.status = TripStatus.CANCELLED
-        tripRepo.save(trip)
-        return trip
+        val updateTrip = trip.copy(status = TripStatus.CANCELLED)
+        tripRepo.save(updateTrip)
+        return updateTrip
     }
 
     fun activeTrips(): List<Trip> =
         tripRepo.all().filter { it.status == TripStatus.IN_PROGRESS }
 }
 
-fun main() {
-
-}
