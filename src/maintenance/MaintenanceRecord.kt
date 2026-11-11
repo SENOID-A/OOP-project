@@ -3,7 +3,7 @@ package maintenance
 import java.time.Instant
 import java.util.UUID
 
-enum class MaintenanceStatus { SCHEDULED, IN_PROGRESS, COMPLETED }
+enum class MaintenanceStatus { SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED }
 
 data class MaintenanceRecord(
     val id: String = UUID.randomUUID().toString(),
