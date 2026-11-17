@@ -2,10 +2,10 @@ package warehouse
 
 import location.Location
 
-// A warehouse owned by the other project (Warehouse and Distribution Locator).
-// Our fleet app only READS it, so everything is val (read-only).
+// Matches the classmate's table: warehouse_id, warehouse_name, province, latitude, longitude.
+// Read-only: our app never changes this data.
 data class Warehouse(
-    val id: String,
+    val id: String,        // their warehouse_id is a number; we keep it as text
     val name: String,
     val province: String,
     val location: Location,

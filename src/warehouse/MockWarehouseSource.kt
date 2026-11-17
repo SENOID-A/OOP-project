@@ -2,14 +2,13 @@ package warehouse
 
 import location.Location
 
-// Fake warehouses so we can build and test BEFORE the classmate sends their database.
-// When their data arrives, write a new class (e.g. SqliteWarehouseSource) that
-// implements WarehouseSource, and change ONE line in main. Nothing else changes.
 class MockWarehouseSource : WarehouseSource {
     private val warehouses = listOf(
-        Warehouse("W-1", "Manila Main Warehouse", "Manila", Location(14.6091, 120.9672)),
-        Warehouse("W-2", "Dasmarinas Hub", "Dasmarinas", Location(14.3294, 120.9367)),
-        Warehouse("W-3", "Batangas Port Depot", "Batangas", Location(13.7565, 121.0583)),
+        Warehouse("1", "J&T Express Delivery Distribution Center (Dasmariñas)", "Cavite", Location(14.3294, 120.9367)),
+        Warehouse("2", "J&T Calamba DC", "Laguna", Location(14.2091219, 121.15546)),
+        Warehouse("3", "J&T Batangas DC", "Batangas", Location(14.0894929, 121.1368192)),
+        Warehouse("4", "J&T Main Warehouse Taytay", "Rizal", Location(14.564637, 121.121234)),
+        Warehouse("5", "J&T Express Lucena DH3", "Quezon", Location(13.9444088, 121.6122594)),
     )
 
     override fun all(): List<Warehouse> = warehouses

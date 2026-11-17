@@ -13,6 +13,8 @@ import user.Driver
 import vehicle.Vehicle
 import vehicle.VehicleStatus
 import vehicle.VehicleType
+import warehouse.WarehouseSource
+import warehouse.MockWarehouseSource
 import java.time.Instant
 
 var failures = 0
@@ -33,6 +35,9 @@ fun expectError(label: String, expected: String, block: () -> Unit) {
 }
 
 fun main() {
+    val warehouses: WarehouseSource = MockWarehouseSource()
+    println(warehouses.all().size)                       // 5
+    println(warehouses.nearestTo(Location(14.6, 121.0))?.name)
     database.Database.init()
     database.Database.clearAll()
     database.Database.init()
