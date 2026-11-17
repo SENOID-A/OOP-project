@@ -16,7 +16,7 @@ class SqliteWarehouseSource(
     private val table: String = "warehouses",
     private val idCol: String = "id",
     private val nameCol: String = "name",
-    private val addressCol: String = "address",
+    private val provinceCol: String = "province",
     private val latCol: String = "latitude",
     private val lonCol: String = "longitude",
     private val capacityCol: String = "capacity_kg",
@@ -52,8 +52,7 @@ class SqliteWarehouseSource(
     private fun toWarehouse(rs: ResultSet) = Warehouse(
         id = rs.getString(idCol),
         name = rs.getString(nameCol),
-        address = rs.getString(addressCol) ?: "",
+        province = rs.getString(provinceCol) ?: "",
         location = Location(rs.getDouble(latCol), rs.getDouble(lonCol)),
-        capacityKg = rs.getDouble(capacityCol),
     )
 }

@@ -33,6 +33,10 @@ fun expectError(label: String, expected: String, block: () -> Unit) {
 }
 
 fun main() {
+    database.Database.init()
+    database.Database.clearAll()
+    database.Database.init()
+    println("Database ready")
     // ---------- Setup: repositories and services ----------
     val tripRepo = TripRepository()
     val vehicleRepo = VehicleRepository()
