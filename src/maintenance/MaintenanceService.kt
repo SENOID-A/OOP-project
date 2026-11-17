@@ -10,6 +10,12 @@ class MaintenanceService(
     private val vehicleRepo: VehicleRepository,
 ) {
 
+    private fun hasOpenMaintenance(vehicleId: String, excludeId: String? = null): Boolean =
+        maintenanceRepo.forVehicle(vehicleId).any {
+            it.id != excludeId &&
+                (it.status == MaintenanceStatus.SCHEDULED || it.status == MaintenanceStatus.IN_PROGRESS)
+        }
+
     fun scheduleMaintenance(
         vehicleId: String,
         description: String,
@@ -19,9 +25,13 @@ class MaintenanceService(
         val vehicle = vehicleRepo.findById(vehicleId)
             ?: error("Vehicle not found")
 
-        // 2. CHECK — only idle vehicles can be scheduled for maintenance
+        // 2. CHECK
+        require(description.isNotBlank()) { "Description cannot be blank" }
         require(vehicle.status == VehicleStatus.IDLE) {
             "Vehicle must be idle to schedule maintenance"
+        }
+        require(!hasOpenMaintenance(vehicleId)) {
+            "Vehicle already has pending maintenance"
         }
 
         // 3. CREATE
@@ -46,8 +56,11 @@ class MaintenanceService(
         require(record.status == MaintenanceStatus.SCHEDULED) {
             "Maintenance is not scheduled"
         }
+        require(vehicle.status == VehicleStatus.IDLE) {
+            "Vehicle must be idle to start maintenance"
+        }
 
-        // 3. CHANGE — both together
+        // 3. CHANGE
         record.status = MaintenanceStatus.IN_PROGRESS
         record.startedAt = Instant.now()
         vehicle.status = VehicleStatus.MAINTENANCE
@@ -71,11 +84,13 @@ class MaintenanceService(
         }
         require(cost >= 0) { "Cost cannot be negative" }
 
-        // 3. CHANGE — both together
+        // 3. CHANGE
         record.status = MaintenanceStatus.COMPLETED
         record.completedAt = Instant.now()
         record.cost = cost
-        vehicle.status = VehicleStatus.IDLE
+        if (vehicle.status == VehicleStatus.MAINTENANCE) {
+            vehicle.status = VehicleStatus.IDLE
+        }
 
         // 4. SAVE
         maintenanceRepo.save(record)
@@ -84,32 +99,32 @@ class MaintenanceService(
     }
 
     fun cancelMaintenance(recordId: String): MaintenanceRecord {
-    // 1. FIND
-    val record = maintenanceRepo.findById(recordId)
-        ?: error("Maintenance record not found")
+        // 1. FIND
+        val record = maintenanceRepo.findById(recordId)
+            ?: error("Maintenance record not found")
 
-    // 2. CHECK
-    require(record.status == MaintenanceStatus.SCHEDULED || record.status == MaintenanceStatus.IN_PROGRESS) {
-        "Maintenance cannot be cancelled"
-    }
-
-    // 3. CHANGE
-    val wasStarted = record.status == MaintenanceStatus.IN_PROGRESS
-    record.status = MaintenanceStatus.CANCELLED
-    record.completedAt = Instant.now()
-
-    // 4. SAVE
-    maintenanceRepo.save(record)
-    if (wasStarted) {
-        vehicleRepo.findById(record.vehicleId)?.let {
-            it.status = VehicleStatus.IDLE
-            vehicleRepo.save(it)
+        // 2. CHECK
+        require(record.status == MaintenanceStatus.SCHEDULED || record.status == MaintenanceStatus.IN_PROGRESS) {
+            "Maintenance cannot be cancelled"
         }
-    }
-    return record
 
+        // 3. CHANGE (no completedAt: a cancelled record was never completed)
+        val wasStarted = record.status == MaintenanceStatus.IN_PROGRESS
+        record.status = MaintenanceStatus.CANCELLED
+
+        // 4. SAVE
+        maintenanceRepo.save(record)
+        if (wasStarted) {
+            vehicleRepo.findById(record.vehicleId)?.let {
+                if (it.status == VehicleStatus.MAINTENANCE) {
+                    it.status = VehicleStatus.IDLE
+                    vehicleRepo.save(it)
+                }
+            }
+        }
+        return record
+    }
 
     fun activeMaintenance(): List<MaintenanceRecord> =
         maintenanceRepo.all().filter { it.status == MaintenanceStatus.IN_PROGRESS }
 }
-
