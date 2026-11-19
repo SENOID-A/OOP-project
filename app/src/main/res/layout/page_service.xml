@@ -1,0 +1,15 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:padding="18dp" android:paddingBottom="24dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Maintenance records" android:textColor="@color/ink" android:textSize="25sp" android:textStyle="bold" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Scheduled service and maintenance history" android:textColor="@color/muted" android:textSize="13sp" android:layout_marginTop="4dp" android:layout_marginBottom="18dp" />
+        <androidx.recyclerview.widget.RecyclerView android:id="@+id/listRecycler"
+            android:layout_width="match_parent" android:layout_height="wrap_content" android:nestedScrollingEnabled="false" />
+        <TextView android:id="@+id/emptyText" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="No records to display yet." android:textColor="@color/muted"
+            android:gravity="center" android:padding="30dp" android:visibility="gone" />
+    </LinearLayout>
+</ScrollView>

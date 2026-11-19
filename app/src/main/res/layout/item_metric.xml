@@ -1,0 +1,13 @@
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="0dp" android:layout_height="104dp" android:layout_weight="1"
+    android:layout_marginEnd="7dp" app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="17dp" app:cardElevation="0dp" app:strokeColor="@color/line" app:strokeWidth="1dp">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+        android:orientation="vertical" android:gravity="center_vertical" android:paddingStart="15dp">
+        <TextView android:id="@+id/metricValue" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="00" android:textColor="@color/ink" android:textSize="27sp" android:textStyle="bold" />
+        <TextView android:id="@+id/metricLabel" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Vehicles" android:textColor="@color/muted" android:textSize="11sp" android:layout_marginTop="4dp" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

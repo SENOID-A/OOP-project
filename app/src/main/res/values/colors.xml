@@ -1,0 +1,18 @@
+<resources>
+    <color name="navy">#14263D</color>
+    <color name="navy_light">#203A58</color>
+    <color name="teal">#138A7E</color>
+    <color name="teal_light">#E5F5F2</color>
+    <color name="canvas">#F3F6F8</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="ink">#172433</color>
+    <color name="muted">#718096</color>
+    <color name="line">#E4EAF0</color>
+    <color name="orange">#E18B35</color>
+    <color name="red">#D95D5D</color>
+    <color name="green">#26866F</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="nav_selected">#138A7E</color>
+    <color name="nav_unselected">#81909E</color>
+</resources>

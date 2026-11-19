@@ -1,0 +1,2 @@
+<resources><style name="Theme.Teratrack" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+<item name="colorPrimary">@color/navy</item><item name="colorSecondary">@color/teal</item><item name="android:statusBarColor">@color/navy</item></style></resources>

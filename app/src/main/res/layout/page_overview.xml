@@ -1,0 +1,56 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:clipToPadding="false" android:fillViewport="true">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:padding="18dp" android:paddingBottom="24dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Operations overview" android:textColor="@color/ink" android:textSize="25sp" android:textStyle="bold" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="A clear picture of your fleet activity" android:textColor="@color/muted" android:textSize="13sp" android:layout_marginTop="4dp" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="18dp" app:cardBackgroundColor="@color/navy"
+            app:cardCornerRadius="20dp" app:cardElevation="0dp"
+            xmlns:app="http://schemas.android.com/apk/res-auto">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="18dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="FLEET CONTROL CENTER" android:textColor="#AFC5D6" android:textSize="10sp" android:letterSpacing="0.12" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Your operations,
+at a glance." android:textColor="@color/white"
+                    android:textSize="22sp" android:textStyle="bold" android:layout_marginTop="8dp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Vehicles · Trips · Maintenance · Regional locations"
+                    android:textColor="#C7D5E2" android:textSize="11sp" android:layout_marginTop="8dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="FLEET SUMMARY" android:textColor="@color/muted" android:textSize="10sp"
+            android:textStyle="bold" android:letterSpacing="0.13" android:layout_marginTop="22dp" android:layout_marginBottom="10dp" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+            <include android:id="@+id/metricVehicles" layout="@layout/item_metric" />
+            <include android:id="@+id/metricTrips" layout="@layout/item_metric" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="10dp">
+            <include android:id="@+id/metricAvailable" layout="@layout/item_metric" />
+            <include android:id="@+id/metricService" layout="@layout/item_metric" />
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:gravity="center_vertical" android:orientation="horizontal"
+            android:layout_marginTop="24dp" android:layout_marginBottom="10dp">
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                android:text="Registered vehicles" android:textColor="@color/ink" android:textSize="16sp" android:textStyle="bold" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="LATEST RECORDS" android:textColor="@color/muted" android:textSize="9sp" android:textStyle="bold" android:letterSpacing="0.08" />
+        </LinearLayout>
+        <androidx.recyclerview.widget.RecyclerView android:id="@+id/overviewRecycler"
+            android:layout_width="match_parent" android:layout_height="wrap_content" android:nestedScrollingEnabled="false" />
+        <TextView android:id="@+id/overviewEmpty" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="No vehicle records have been added yet." android:textColor="@color/muted"
+            android:gravity="center" android:padding="22dp" android:visibility="gone" />
+    </LinearLayout>
+</ScrollView>
