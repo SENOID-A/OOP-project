@@ -27,20 +27,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             Teratrack_ver30Theme {
-                LoginScreen(
-                    onLoginClick = { username, password ->
-                        // 3. Pass the click event to a helper function
-                        handleLogin(username, password)
-                    },
-                    onForgotPasswordClick = {
-                        println("Clicked forgot password")
-                        // TODO: Navigate to Forgot Password Screen later
-                    },
-                    onCreateAccountClick = {
-                        println("Clicked Create Account!")
-                        // TODO: Navigate to Create Account Screen later
-                    }
-                )
+                AppNavigation()
             }
         }
     }
