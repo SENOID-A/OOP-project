@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
@@ -24,14 +26,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun LoginScreen(onLoginClick: (String, String) -> Unit) {
-    var username by remember {
-        mutableStateOf("")
-    }
-
-    var password by remember {
-        mutableStateOf("")
-    }
+fun LoginScreen(
+    onLoginClick: (String, String) -> Unit,
+    onForgotPasswordClick: () -> Unit,
+    onCreateAccountClick: () -> Unit //Added this new parameter
+) {
+    var username by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier.fillMaxSize().background(Color.White),
@@ -53,36 +54,60 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit) {
         Spacer(modifier = Modifier.height(20.dp))
         Text(text = "Login", color = Color.Black, fontSize = 20.sp, fontWeight = FontWeight.Bold)
 
-        OutlinedTextField(value = username, onValueChange = {
-            username = it
-        }, label = {
-            Text(text = "Username", color = Color.Black)
-        })
+        OutlinedTextField(
+            value = username,
+            onValueChange = { username = it },
+            label = { Text(text = "Username", color = Color.Black) },
+
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.Black,
+                focusedBorderColor = Color.Black,
+                unfocusedBorderColor = Color.Gray,
+                cursorColor = Color.Black
+            )
+
+
+        )
 
         Spacer(modifier = Modifier.height(20.dp))
-        OutlinedTextField(value = password, onValueChange = {
-            password = it
-        }, label = {
-            Text(text = "Password", color = Color.Black)
-        }, visualTransformation = PasswordVisualTransformation())
 
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text(text = "Password", color = Color.Black) },
+            visualTransformation = PasswordVisualTransformation(),
+
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = Color.Black,     // Color when typing
+                unfocusedTextColor = Color.Black,   // Color before typing
+                focusedBorderColor = Color.Black,   // Border color when clicked
+                unfocusedBorderColor = Color.Gray,  // Border color when not clicked
+                cursorColor = Color.Black           // The blinking cursor
+            )
+
+        )
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        Button(onClick = {
-            onLoginClick(username, password)
-        }) {
+        // Login Button
+        Button(onClick = { onLoginClick(username, password) }) {
             Text(text = "Login", color = Color.White)
         }
 
         Spacer(modifier = Modifier.height(20.dp))
 
+        // 👇 NEW: Create Account Button
+        OutlinedButton(onClick = { onCreateAccountClick() }) {
+            Text(text = "Create Account", color = Color.Black)
+        }
 
-        Text(text = "Forgot Password", modifier = Modifier.clickable {
-            // Function
-        }, color = Color.Black)
+        Spacer(modifier = Modifier.height(20.dp))
 
-
+        Text(
+            text = "Forgot Password",
+            modifier = Modifier.clickable { onForgotPasswordClick() },
+            color = Color.Black
+        )
     }
 }
-

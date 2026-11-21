@@ -9,6 +9,8 @@ class CreateAccount (
     var password: String = ""
         private set
 
+    fun getPasswordForDb(): String = password
+
     override fun enterPassword(password: String): String {
         if (password.length >= 8) {
             this.password = password
