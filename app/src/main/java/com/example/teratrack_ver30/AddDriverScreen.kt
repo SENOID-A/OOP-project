@@ -22,28 +22,57 @@ fun AddDriverScreen(
     driverVm: DriverViewModel,
     vehicleVm: VehicleViewModel
 ) {
+
     val vehicles by vehicleVm.vehicles.collectAsState()
+
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
+    var isSaving by remember { mutableStateOf(false) }
 
     var name by remember { mutableStateOf("") }
     var address by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
 
-    // CONDITION: You can only add a driver if there is at least one vehicle.
+    // Require at least one vehicle
     if (vehicles.isEmpty()) {
+
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) },
-            containerColor = Color(0xFF0D1B3E) // <-- CHANGED TO NAVY BLUE
+            containerColor = Color(0xFF0D1B3E)
         ) { padding ->
-            Column(Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
+
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(16.dp)
+            ) {
+
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+
+                    IconButton(
+                        onClick = {
+                            navController.popBackStack()
+                        }
+                    ) {
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.White
+                        )
                     }
-                    Text("Add Driver", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
+
+                    Text(
+                        "Add Driver",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
                 }
+
                 HorizontalDivider(color = Color.Gray)
+
                 Text(
                     "You must add at least one vehicle before adding a driver.",
                     color = Color.Red,
@@ -51,24 +80,48 @@ fun AddDriverScreen(
                 )
             }
         }
+
         return
     }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = Color(0xFF0D1B3E) // <-- CHANGED TO NAVY BLUE
+        containerColor = Color(0xFF0D1B3E)
     ) { padding ->
-        Column(Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
+
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp)
+        ) {
+
             // Header
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = { navController.popBackStack() }) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+
+                IconButton(
+                    onClick = {
+                        if (!isSaving) navController.popBackStack()
+                    },
+                    enabled = !isSaving
+                ) {
+                    Icon(
+                        Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White
+                    )
                 }
-                Text("Add Driver", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
+
+                Text(
+                    "Add Driver",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
             }
+
             HorizontalDivider(color = Color.Gray)
 
-            // Text Fields (White background, Black text)
             val fieldColors = OutlinedTextFieldDefaults.colors(
                 focusedTextColor = Color.Black,
                 unfocusedTextColor = Color.Black,
@@ -76,48 +129,101 @@ fun AddDriverScreen(
                 unfocusedContainerColor = Color.White
             )
 
+            // Name
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
                 label = { Text("Name") },
+                enabled = !isSaving,
                 colors = fieldColors,
-                modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
             )
+
+            // Address
             OutlinedTextField(
                 value = address,
                 onValueChange = { address = it },
                 label = { Text("Address") },
+                enabled = !isSaving,
                 colors = fieldColors,
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
             )
+
+            // Phone
             OutlinedTextField(
                 value = phone,
                 onValueChange = { phone = it },
                 label = { Text("Phone Number") },
+                enabled = !isSaving,
                 colors = fieldColors,
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
             )
 
-            // Save Button (Unchanged)
+            // ADD BUTTON
             Button(
                 onClick = {
+
+                    if (isSaving) return@Button
+
                     if (name.isBlank()) {
-                        scope.launch { snackbarHostState.showSnackbar("Name cannot be empty") }
+                        scope.launch {
+                            snackbarHostState.showSnackbar(
+                                "Name cannot be empty"
+                            )
+                        }
                         return@Button
                     }
+
                     if (phone.length < 7) {
-                        scope.launch { snackbarHostState.showSnackbar("Phone number must be valid") }
+                        scope.launch {
+                            snackbarHostState.showSnackbar(
+                                "Phone number must be valid"
+                            )
+                        }
                         return@Button
                     }
-                    driverVm.add(DriverEntity(name = name, address = address, phone = phone))
-                    scope.launch { snackbarHostState.showSnackbar("Driver added!") }
-                    navController.popBackStack()
+
+                    isSaving = true
+
+                    scope.launch {
+                        try {
+
+                            driverVm.add(
+                                DriverEntity(
+                                    name = name.trim(),
+                                    address = address.trim(),
+                                    phone = phone.trim()
+                                )
+                            )
+
+                            navController.popBackStack()
+
+                        } catch (e: Exception) {
+
+                            isSaving = false
+
+                            snackbarHostState.showSnackbar(
+                                "Could not add driver: ${
+                                    e.localizedMessage ?: "Please try again."
+                                }"
+                            )
+                        }
+                    }
                 },
+                enabled = !isSaving,
                 modifier = Modifier.padding(top = 24.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)) // Orange button
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFFF9800)
+                )
             ) {
                 Text(
-                    text = "Add Driver",
+                    text = if (isSaving) "Saving..." else "Add Driver",
                     color = Color.White
                 )
             }

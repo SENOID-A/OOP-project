@@ -16,7 +16,15 @@ class VehicleViewModel(private val repo: VehicleRepository) : ViewModel() {
     val unassigned = repo.getUnassigned()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun add(v: VehicleEntity) = viewModelScope.launch { repo.add(v) }
-    fun update(v: VehicleEntity) = viewModelScope.launch { repo.update(v) }
-    fun delete(v: VehicleEntity) = viewModelScope.launch { repo.delete(v) }
+    suspend fun add(v: VehicleEntity) {
+        repo.add(v)
+    }
+
+    fun update(v: VehicleEntity) = viewModelScope.launch {
+        repo.update(v)
+    }
+
+    fun delete(v: VehicleEntity) = viewModelScope.launch {
+        repo.delete(v)
+    }
 }

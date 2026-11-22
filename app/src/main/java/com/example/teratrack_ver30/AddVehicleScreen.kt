@@ -26,26 +26,40 @@ import java.io.File
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddVehicleScreen(navController: NavController, vm: VehicleViewModel) {
+
     var vehicleId by remember { mutableStateOf("") }
     var imagePath by remember { mutableStateOf<String?>(null) }
-    val context = LocalContext.current
 
+    val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
+    var isSaving by remember { mutableStateOf(false) }
 
     // Gallery Picker
     val galleryLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri ->
         uri ?: return@rememberLauncherForActivityResult
+
         try {
-            val file = File(context.cacheDir, "vehicle_${System.currentTimeMillis()}.jpg")
+            val file = File(
+                context.cacheDir,
+                "vehicle_${System.currentTimeMillis()}.jpg"
+            )
+
             context.contentResolver.openInputStream(uri)?.use { input ->
-                file.outputStream().use { output -> input.copyTo(output) }
+                file.outputStream().use { output ->
+                    input.copyTo(output)
+                }
             }
+
             imagePath = file.absolutePath
+
         } catch (e: Exception) {
-            scope.launch { snackbarHostState.showSnackbar("Failed to save image") }
+            scope.launch {
+                snackbarHostState.showSnackbar("Failed to save image")
+            }
         }
     }
 
@@ -54,49 +68,89 @@ fun AddVehicleScreen(navController: NavController, vm: VehicleViewModel) {
         ActivityResultContracts.TakePicturePreview()
     ) { bitmap ->
         bitmap ?: return@rememberLauncherForActivityResult
+
         try {
-            val file = File(context.cacheDir, "vehicle_${System.currentTimeMillis()}.jpg")
-            file.outputStream().use { out ->
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+            val file = File(
+                context.cacheDir,
+                "vehicle_${System.currentTimeMillis()}.jpg"
+            )
+
+            file.outputStream().use { output ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, output)
             }
+
             imagePath = file.absolutePath
+
         } catch (e: Exception) {
-            scope.launch { snackbarHostState.showSnackbar("Failed to save image") }
+            scope.launch {
+                snackbarHostState.showSnackbar("Failed to save image")
+            }
         }
     }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = Color(0xFF0D1B3E) // <-- CHANGED TO DARK NAVY BLUE
+        containerColor = Color(0xFF0D1B3E)
     ) { padding ->
-        Column(Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
+
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp)
+        ) {
+
             // Header
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = { navController.popBackStack() }) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+
+                IconButton(
+                    onClick = {
+                        if (!isSaving) navController.popBackStack()
+                    },
+                    enabled = !isSaving
+                ) {
+                    Icon(
+                        Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White
+                    )
                 }
-                Text("Add Vehicle", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
+
+                Text(
+                    "Add Vehicle",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
             }
+
             HorizontalDivider(color = Color.Gray)
 
-            // Text Field (White background, Black text)
+            // Vehicle ID
             OutlinedTextField(
                 value = vehicleId,
                 onValueChange = { vehicleId = it },
                 label = { Text("Vehicle ID (e.g. V1-0)") },
+                enabled = !isSaving,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = Color.Black,
                     unfocusedTextColor = Color.Black,
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White
                 ),
-                modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
             )
 
-            // Image Buttons (Orange)
+            // Image Buttons
             Row(Modifier.padding(top = 16.dp)) {
+
                 Button(
-                    onClick = { galleryLauncher.launch("image/*") },
+                    onClick = {
+                        galleryLauncher.launch("image/*")
+                    },
+                    enabled = !isSaving,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFFFF9800),
                         contentColor = Color.White
@@ -108,7 +162,10 @@ fun AddVehicleScreen(navController: NavController, vm: VehicleViewModel) {
                 Spacer(Modifier.width(8.dp))
 
                 Button(
-                    onClick = { cameraLauncher.launch(null) },
+                    onClick = {
+                        cameraLauncher.launch(null)
+                    },
+                    enabled = !isSaving,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFFFF9800),
                         contentColor = Color.White
@@ -120,34 +177,73 @@ fun AddVehicleScreen(navController: NavController, vm: VehicleViewModel) {
 
             // Image Preview
             imagePath?.let { path ->
-                val bmp = BitmapFactory.decodeFile(path)
-                if (bmp != null) {
+
+                val bitmap = BitmapFactory.decodeFile(path)
+
+                if (bitmap != null) {
                     Image(
-                        bitmap = bmp.asImageBitmap(),
-                        contentDescription = "Preview",
-                        modifier = Modifier.size(120.dp).padding(top = 16.dp)
+                        bitmap = bitmap.asImageBitmap(),
+                        contentDescription = "Vehicle Preview",
+                        modifier = Modifier
+                            .size(120.dp)
+                            .padding(top = 16.dp)
                     )
                 }
             }
 
-            // Save Button (Orange)
+            // ADD BUTTON
             Button(
                 onClick = {
+
+                    if (isSaving) return@Button
+
                     if (vehicleId.isBlank()) {
-                        scope.launch { snackbarHostState.showSnackbar("Vehicle ID cannot be empty") }
+                        scope.launch {
+                            snackbarHostState.showSnackbar(
+                                "Vehicle ID cannot be empty"
+                            )
+                        }
                         return@Button
                     }
-                    vm.add(VehicleEntity(vehicleId = vehicleId, imagePath = imagePath))
-                    scope.launch { snackbarHostState.showSnackbar("Vehicle added!") }
-                    navController.popBackStack()
+
+                    // Prevent another submission immediately
+                    isSaving = true
+
+                    scope.launch {
+                        try {
+
+                            vm.add(
+                                VehicleEntity(
+                                    vehicleId = vehicleId.trim(),
+                                    imagePath = imagePath
+                                )
+                            )
+
+                            // Navigate only after successful save
+                            navController.popBackStack()
+
+                        } catch (e: Exception) {
+
+                            isSaving = false
+
+                            snackbarHostState.showSnackbar(
+                                "Could not add vehicle: ${
+                                    e.localizedMessage ?: "Please try again."
+                                }"
+                            )
+                        }
+                    }
                 },
+                enabled = !isSaving,
                 modifier = Modifier.padding(top = 24.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFFFF9800),
                     contentColor = Color.White
                 )
             ) {
-                Text("Add Vehicle")
+                Text(
+                    if (isSaving) "Saving..." else "Add Vehicle"
+                )
             }
         }
     }

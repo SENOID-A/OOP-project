@@ -13,10 +13,22 @@ class TripViewModel(
     private val repo: TripRepository,
     private val warehouseRepo: WarehouseRepository
 ) : ViewModel() {
-    val trips = repo.getAll().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-    val warehouses = warehouseRepo.getAll().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun add(t: TripEntity) = viewModelScope.launch { repo.add(t) }
-    fun update(t: TripEntity) = viewModelScope.launch { repo.update(t) }
-    fun delete(t: TripEntity) = viewModelScope.launch { repo.delete(t) }
+    val trips = repo.getAll()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val warehouses = warehouseRepo.getAll()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    suspend fun add(t: TripEntity) {
+        repo.add(t)
+    }
+
+    fun update(t: TripEntity) = viewModelScope.launch {
+        repo.update(t)
+    }
+
+    fun delete(t: TripEntity) = viewModelScope.launch {
+        repo.delete(t)
+    }
 }

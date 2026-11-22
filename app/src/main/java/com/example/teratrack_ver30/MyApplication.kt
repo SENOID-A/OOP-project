@@ -12,15 +12,11 @@ class MyApplication : Application() {
 
         val config = Configuration.getInstance()
 
-        // Identify TeraTrack to OpenStreetMap.
+        // Clearly identify the TeraTrack Android application.
         config.userAgentValue =
-            "TeraTrack/1.0 (com.example.teratrack_ver30)"
+            "TeraTrack/1.0 (+https://github.com/SENOID-A/OOP-project)"
 
-        // Add the Referer header for the tile requests.
-        config.additionalHttpRequestProperties["Referer"] =
-            "https://github.com/SENOID-A/OOP-project/"
-
-        // Configure map tile storage.
+        // Configure OSMDroid tile storage.
         val osmDir = File(
             getExternalFilesDir(null),
             "osmdroid"
@@ -30,7 +26,13 @@ class MyApplication : Application() {
             osmDir.mkdirs()
         }
 
+        val tileCache = File(osmDir, "tiles")
+
+        if (!tileCache.exists()) {
+            tileCache.mkdirs()
+        }
+
         config.osmdroidBasePath = osmDir
-        config.osmdroidTileCache = File(osmDir, "tiles")
+        config.osmdroidTileCache = tileCache
     }
 }

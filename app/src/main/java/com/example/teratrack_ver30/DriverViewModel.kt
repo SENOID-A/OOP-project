@@ -13,7 +13,15 @@ class DriverViewModel(private val repo: DriverRepository) : ViewModel() {
     val drivers = repo.getAll()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun add(d: DriverEntity) = viewModelScope.launch { repo.add(d) }
-    fun update(d: DriverEntity) = viewModelScope.launch { repo.update(d) }
-    fun delete(d: DriverEntity) = viewModelScope.launch { repo.delete(d) }
+    suspend fun add(d: DriverEntity) {
+        repo.add(d)
+    }
+
+    fun update(d: DriverEntity) = viewModelScope.launch {
+        repo.update(d)
+    }
+
+    fun delete(d: DriverEntity) = viewModelScope.launch {
+        repo.delete(d)
+    }
 }

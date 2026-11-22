@@ -9,8 +9,19 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class MaintenanceViewModel(private val repo: MaintenanceRepository) : ViewModel() {
-    val maintenanceRecords = repo.getAll().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-    fun add(m: MaintenanceEntity) = viewModelScope.launch { repo.add(m) }
-    fun update(m: MaintenanceEntity) = viewModelScope.launch { repo.update(m) }
-    fun delete(m: MaintenanceEntity) = viewModelScope.launch { repo.delete(m) }
+
+    val maintenanceRecords = repo.getAll()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    suspend fun add(m: MaintenanceEntity) {
+        repo.add(m)
+    }
+
+    fun update(m: MaintenanceEntity) = viewModelScope.launch {
+        repo.update(m)
+    }
+
+    fun delete(m: MaintenanceEntity) = viewModelScope.launch {
+        repo.delete(m)
+    }
 }
