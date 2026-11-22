@@ -27,7 +27,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             Teratrack_ver30Theme {
-                AppNavigation()
+                AppNavigation(userRepository)
             }
         }
     }

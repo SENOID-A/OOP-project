@@ -2,12 +2,12 @@ package com.example.teratrack_ver30.user
 
 import com.example.teratrack_ver30.user.user.CreateAccount
 
-class ForgetPassword(private val account: CreateAccount) {
+class ForgotPassword(private val account: CreateAccount) {
     fun getSecurityQuestion(): String {
         return "What is your favourite word?"
     }
 
-    fun resetPassword(answerAttempt: String, newPassword: String): String{
+    suspend fun updateUserPassword(answerAttempt: String, newPassword: String): String{
         if (answerAttempt.equals(account.favouriteWord, ignoreCase = true)){
             val result = account.enterPassword(newPassword)
             return if (result == "Password set successfully") {

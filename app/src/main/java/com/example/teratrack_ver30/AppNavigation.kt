@@ -1,40 +1,103 @@
+
 package com.example.teratrack_ver30
 
+import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.safeContent
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.teratrack_ver30.repository.UserRepository
+import kotlinx.coroutines.launch
 
 @Composable
 fun AppNavigation(userRepository: UserRepository) {
-    val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = "login") {
-        
-        // 1. Login Screen
+    val navController = rememberNavController()
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+
+    NavHost(
+        navController = navController,
+        startDestination = "login",
+        modifier = Modifier
+
+    ) {
+
         composable("login") {
+
             LoginScreen(
                 onLoginClick = { username, password ->
-                    // TODO: Add real authentication here
-                    navController.navigate("dashboard") {
-                        popUpTo("login") { inclusive = true } // Don't go back to login on back press
+
+                    // Check empty fields first
+                    if (username.isBlank() || password.isBlank()) {
+
+                        Toast.makeText(
+                            context,
+                            "Please enter username and password",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                    } else {
+
+                        coroutineScope.launch {
+
+                            // Find the user in the database
+                            val userAccount =
+                                userRepository.getUser(username)
+
+                            if (userAccount != null &&
+                                userAccount.verifyPassword(password)
+                            ) {
+
+                                Toast.makeText(
+                                    context,
+                                    "Login Successful!",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+
+                                navController.navigate("dashboard") {
+                                    popUpTo("login") {
+                                        inclusive = true
+                                    }
+                                }
+
+                            } else {
+
+                                Toast.makeText(
+                                    context,
+                                    "Invalid username or password",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
                     }
                 },
+
                 onForgotPasswordClick = {
                     navController.navigate("forgot_password")
                 },
-                onCreateAccountClick = { // You will need to add this parameter to LoginScreen
+
+                onCreateAccountClick = {
                     navController.navigate("create_account")
                 }
             )
         }
+
         composable("create_account") {
             CreateAccScreen(
-                userRepository = userRepository, // <-- Pass the repository here
+                userRepository = userRepository,
                 onAccountCreated = {
-                    // After successful registration, pop back to login
                     navController.popBackStack()
                 },
                 onBackToLogin = {
@@ -43,25 +106,27 @@ fun AppNavigation(userRepository: UserRepository) {
             )
         }
 
-        // 2. Forgot Password Screen (Placeholder)
         composable("forgot_password") {
-            // We will build this UI next
-            Text("Forgot Password Screen")
+
+            ForgotPasswordScreen(
+                userRepository = userRepository,
+
+                onPasswordReset = {
+                    navController.popBackStack("login", false)
+                },
+
+                onBackToLogin = {
+                    navController.popBackStack()
+                }
+            )
         }
 
-        // 3. Create Account Screen (Placeholder)
-        composable("create_account") {
-            // We will build this UI next
-            Text("Create Account Screen")
-        }
-
-        // 4. Dashboard (The Screenshot)
         composable("dashboard") {
             DashboardScreen(
-                onNavigateToVehicles = { /* TODO */ },
-                onNavigateToDrivers = { /* TODO */ },
-                onNavigateToMaintenance = { /* TODO */ },
-                onNavigateToTrips = { /* TODO */ }
+                onNavigateToVehicles = {},
+                onNavigateToDrivers = {},
+                onNavigateToMaintenance = {},
+                onNavigateToTrips = {}
             )
         }
     }

@@ -46,8 +46,13 @@ fun CreateAccScreen(
             onValueChange = { username = it },
             label = { Text("Username") },
             modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+            singleLine = true,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.Black
+            )
         )
+
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -58,7 +63,11 @@ fun CreateAccScreen(
             label = { Text("Password") },
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation(),
-            singleLine = true
+            singleLine = true,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.Black
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -69,7 +78,11 @@ fun CreateAccScreen(
             onValueChange = { favouriteWord = it },
             label = { Text("What is your favourite word? (Security Question)") },
             modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+            singleLine = true,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.Black
+            )
         )
 
         // Error Message Display
@@ -93,7 +106,10 @@ fun CreateAccScreen(
 
                 coroutineScope.launch {
                     // 3. Check if user already exists in the database
-                    val existingUser = userRepository.getUser(username)
+                    val cleanUsername = username.trim()
+
+                    val existingUser = userRepository.getUser(cleanUsername)
+
                     if (existingUser != null) {
                         errorMessage = "Username is already taken."
                         isLoading = false
@@ -111,6 +127,7 @@ fun CreateAccScreen(
                         onAccountCreated() // Navigate back to login
                     } else {
                         // Password validation failed (e.g., less than 8 characters)
+                        errorMessage = validationResult
                         errorMessage = validationResult
                         isLoading = false
                     }
