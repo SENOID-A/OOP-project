@@ -35,6 +35,8 @@ import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
 import java.net.HttpURLConnection
 import java.net.URL
+import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase
+import org.osmdroid.util.MapTileIndex
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,9 +74,21 @@ fun MapScreen(
     }
 
     // MAP INITIALIZATION
+    val mapTilerTiles = object : OnlineTileSourceBase(
+        "MapTiler", 0, 20, 256, ".png",
+        arrayOf("https://api.maptiler.com/maps/streets-v2/256/")
+    ) {
+        override fun getTileURLString(pMapTileIndex: Long): String =
+            baseUrl +
+                    MapTileIndex.getZoom(pMapTileIndex) + "/" +
+                    MapTileIndex.getX(pMapTileIndex) + "/" +
+                    MapTileIndex.getY(pMapTileIndex) + mImageFilenameEnding +
+                    "?key=zdBrk8JVCeq9qMNKGvLb"
+    }
+
     val mapView = remember(context) {
         MapView(context).apply {
-            setTileSource(TileSourceFactory.MAPNIK)
+            setTileSource(mapTilerTiles)
             setMultiTouchControls(true)
 
             controller.setZoom(12.0)
