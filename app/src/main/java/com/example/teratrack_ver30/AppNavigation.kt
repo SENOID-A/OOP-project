@@ -1,4 +1,4 @@
-package com.example.teratrack_ver30.ui.theme
+package com.example.teratrack_ver30
 
 import android.widget.Toast
 import androidx.compose.runtime.Composable

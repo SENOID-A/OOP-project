@@ -1,4 +1,4 @@
-package com.example.teratrack_ver30.ui.theme
+package com.example.teratrack_ver30
 
 import android.os.Bundle
 import android.widget.Toast
@@ -9,6 +9,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.teratrack_ver30.data.UserDatabase
 import com.example.teratrack_ver30.repository.RoomUserRepository
 import com.example.teratrack_ver30.repository.UserRepository
+import com.example.teratrack_ver30.ui.theme.Teratrack_ver30Theme
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {

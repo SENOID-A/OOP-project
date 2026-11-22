@@ -1,4 +1,4 @@
-package com.example.teratrack_ver30.ui.theme
+package com.example.teratrack_ver30
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -24,7 +24,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.teratrack_ver30.R
 
 @Composable
 fun LoginScreen(

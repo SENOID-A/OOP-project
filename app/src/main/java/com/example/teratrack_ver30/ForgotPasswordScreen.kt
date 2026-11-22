@@ -1,4 +1,4 @@
-package com.example.teratrack_ver30.ui.theme
+package com.example.teratrack_ver30
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
