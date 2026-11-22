@@ -1,10 +1,9 @@
-package com.example.teratrack_ver30
+package com.example.teratrack_ver30.ui.theme
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.teratrack_ver30.data.TripEntity
 import com.example.teratrack_ver30.data.TripRepository
-import com.example.teratrack_ver30.data.WarehouseEntity
 import com.example.teratrack_ver30.data.WarehouseRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn

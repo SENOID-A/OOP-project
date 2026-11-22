@@ -1,4 +1,4 @@
-package com.example.teratrack_ver30
+package com.example.teratrack_ver30.ui.theme
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,26 +14,31 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.teratrack_ver30.data.MaintenanceEntity
+import com.example.teratrack_ver30.data.TripEntity
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScheduleMaintenanceScreen(
+fun ScheduleTripScreen(
     navController: NavController,
-    maintenanceVm: MaintenanceViewModel,
-    vehicleVm: VehicleViewModel
+    tripVm: TripViewModel,
+    vehicleVm: VehicleViewModel,
+    driverVm: DriverViewModel
 ) {
     val vehicles by vehicleVm.vehicles.collectAsState()
+    val warehouses by tripVm.warehouses.collectAsState()
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
     var selectedVehicleId by remember { mutableStateOf<Int?>(null) }
-    var problem by remember { mutableStateOf("") }
+    var startPoint by remember { mutableStateOf("") }
+    var destination by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
     var month by remember { mutableStateOf("") }
     var day by remember { mutableStateOf("") }
     var year by remember { mutableStateOf("") }
+    val drivers by driverVm.drivers.collectAsState()
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -46,7 +51,7 @@ fun ScheduleMaintenanceScreen(
                 IconButton(onClick = { navController.popBackStack() }) {
                     Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
                 }
-                Text("Schedule Maintenance", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                Text("Schedule Trip", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
             }
             HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp), color = Color.Gray)
 
@@ -62,10 +67,8 @@ fun ScheduleMaintenanceScreen(
             var vehicleExpanded by remember { mutableStateOf(false) }
             Box(Modifier.fillMaxWidth()) {
                 OutlinedTextField(
-                    value = vehicles.firstOrNull { it.id == selectedVehicleId }?.vehicleId ?: "Select Vehicle ID",
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Vehicle ID") },
+                    value = vehicles.firstOrNull { it.id == selectedVehicleId }?.vehicleId ?: "Select Vehicle",
+                    onValueChange = {}, readOnly = true, label = { Text("Vehicle ID") },
                     trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) },
                     colors = fieldColors,
                     modifier = Modifier.fillMaxWidth()
@@ -73,25 +76,62 @@ fun ScheduleMaintenanceScreen(
                 Box(Modifier.matchParentSize().clickable { vehicleExpanded = true })
                 DropdownMenu(expanded = vehicleExpanded, onDismissRequest = { vehicleExpanded = false }) {
                     vehicles.forEach { v ->
-                        DropdownMenuItem(
-                            text = { Text(v.vehicleId) },
-                            onClick = { selectedVehicleId = v.id; vehicleExpanded = false }
-                        )
+                        DropdownMenuItem(text = { Text(v.vehicleId) }, onClick = { selectedVehicleId = v.id; vehicleExpanded = false })
                     }
                 }
             }
 
-            // 2. Date Row
+            // 2. Start Point Dropdown
+            var startExpanded by remember { mutableStateOf(false) }
+            Box(Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                OutlinedTextField(
+                    value = if (startPoint.isEmpty()) "Select Start Point" else startPoint,
+                    onValueChange = {}, readOnly = true, label = { Text("Start Point") },
+                    trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) },
+                    colors = fieldColors,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Box(Modifier.matchParentSize().clickable { startExpanded = true })
+                DropdownMenu(expanded = startExpanded, onDismissRequest = { startExpanded = false }) {
+                    warehouses.forEach { w ->
+                        DropdownMenuItem(text = { Text(w.warehouseName) }, onClick = { startPoint = w.warehouseName; startExpanded = false })
+                    }
+                }
+            }
+
+            // 3. Destination Dropdown
+            var destExpanded by remember { mutableStateOf(false) }
+            Box(Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                OutlinedTextField(
+                    value = if (destination.isEmpty()) "Select Destination" else destination,
+                    onValueChange = {}, readOnly = true, label = { Text("Destination") },
+                    trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) },
+                    colors = fieldColors,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Box(Modifier.matchParentSize().clickable { destExpanded = true })
+                DropdownMenu(expanded = destExpanded, onDismissRequest = { destExpanded = false }) {
+                    warehouses.forEach { w ->
+                        DropdownMenuItem(text = { Text(w.warehouseName) }, onClick = { destination = w.warehouseName; destExpanded = false })
+                    }
+                }
+            }
+
+            // 4. Description
+            OutlinedTextField(
+                value = description, onValueChange = { description = it },
+                label = { Text("Description") }, colors = fieldColors,
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+            )
+
+            // 5. Date Row
             Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
 
-                // Month
                 var mExp by remember { mutableStateOf(false) }
                 Box(Modifier.weight(1f)) {
                     OutlinedTextField(
-                        value = if (month.isEmpty()) "Month" else month,
-                        onValueChange = {}, readOnly = true,
-                        trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) },
-                        colors = fieldColors
+                        value = if (month.isEmpty()) "Month" else month, onValueChange = {}, readOnly = true,
+                        trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) }, colors = fieldColors
                     )
                     Box(Modifier.matchParentSize().clickable { mExp = true })
                     DropdownMenu(expanded = mExp, onDismissRequest = { mExp = false }) {
@@ -99,14 +139,11 @@ fun ScheduleMaintenanceScreen(
                     }
                 }
 
-                // Day
                 var dExp by remember { mutableStateOf(false) }
                 Box(Modifier.weight(1f)) {
                     OutlinedTextField(
-                        value = if (day.isEmpty()) "Day" else day,
-                        onValueChange = {}, readOnly = true,
-                        trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) },
-                        colors = fieldColors
+                        value = if (day.isEmpty()) "Day" else day, onValueChange = {}, readOnly = true,
+                        trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) }, colors = fieldColors
                     )
                     Box(Modifier.matchParentSize().clickable { dExp = true })
                     DropdownMenu(expanded = dExp, onDismissRequest = { dExp = false }) {
@@ -114,14 +151,11 @@ fun ScheduleMaintenanceScreen(
                     }
                 }
 
-                // Year
                 var yExp by remember { mutableStateOf(false) }
                 Box(Modifier.weight(1f)) {
                     OutlinedTextField(
-                        value = if (year.isEmpty()) "Year" else year,
-                        onValueChange = {}, readOnly = true,
-                        trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) },
-                        colors = fieldColors
+                        value = if (year.isEmpty()) "Year" else year, onValueChange = {}, readOnly = true,
+                        trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) }, colors = fieldColors
                     )
                     Box(Modifier.matchParentSize().clickable { yExp = true })
                     DropdownMenu(expanded = yExp, onDismissRequest = { yExp = false }) {
@@ -131,24 +165,23 @@ fun ScheduleMaintenanceScreen(
                 }
             }
 
-            // 3. Problem Text Field
-            OutlinedTextField(
-                value = problem,
-                onValueChange = { problem = it },
-                label = { Text("Problem to Fix") },
-                colors = fieldColors,
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
-            )
-
-            // 4. Add Button
+            // 6. Add Button
             Button(
                 onClick = {
-                    if (selectedVehicleId == null || problem.isBlank() || month.isEmpty()) {
+                    if (selectedVehicleId == null || startPoint.isEmpty() || destination.isEmpty() || month.isEmpty()) {
                         scope.launch { snackbarHostState.showSnackbar("Please fill all fields") }
                         return@Button
                     }
                     val dateStr = "$month/$day/$year"
-                    maintenanceVm.add(MaintenanceEntity(vehicleId = selectedVehicleId!!, problem = problem, date = dateStr))
+                    val assignedDriver = drivers.firstOrNull { it.vehicleId == selectedVehicleId }
+                    tripVm.add(TripEntity(
+                        vehicleId = selectedVehicleId!!,
+                        driverName = assignedDriver?.name ?: "Unassigned", // <-- FIXED
+                        description = description,
+                        startPoint = startPoint,
+                        destination = destination,
+                        date = dateStr
+                    ))
                     navController.popBackStack()
                 },
                 modifier = Modifier.fillMaxWidth().padding(top = 24.dp),

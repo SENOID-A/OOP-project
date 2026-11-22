@@ -1,4 +1,4 @@
-package com.example.teratrack_ver30
+package com.example.teratrack_ver30.ui.theme
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -19,7 +19,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.teratrack_ver30.VehicleViewModel
 import com.example.teratrack_ver30.data.VehicleEntity
 import kotlinx.coroutines.launch
 import java.io.File

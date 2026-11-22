@@ -15,10 +15,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Teratrack_ver30"
         tools:ignore="ExtraText"
-        android:name=".MyApplication">
+        android:name=".ui.theme.MyApplication">
 
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.theme.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.Teratrack_ver30"

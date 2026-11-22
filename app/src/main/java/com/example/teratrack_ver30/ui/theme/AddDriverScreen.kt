@@ -1,4 +1,4 @@
-package com.example.teratrack_ver30
+package com.example.teratrack_ver30.ui.theme
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -12,7 +12,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.teratrack_ver30.VehicleViewModel
 import com.example.teratrack_ver30.data.DriverEntity
 import kotlinx.coroutines.launch
 

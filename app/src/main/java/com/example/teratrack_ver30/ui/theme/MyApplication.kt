@@ -1,4 +1,4 @@
-package com.example.teratrack_ver30
+package com.example.teratrack_ver30.ui.theme
 
 import android.app.Application
 import org.osmdroid.config.Configuration

@@ -1,4 +1,4 @@
-package com.example.teratrack_ver30
+package com.example.teratrack_ver30.ui.theme
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -16,16 +16,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.teratrack_ver30.VehicleViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MaintenanceHistoryScreen(
+fun TripHistoryScreen(
     navController: NavController,
-    maintenanceVm: MaintenanceViewModel,
+    tripVm: TripViewModel,
     vehicleVm: VehicleViewModel
 ) {
-    val records by maintenanceVm.maintenanceRecords.collectAsState()
+    val trips by tripVm.trips.collectAsState()
     val vehicles by vehicleVm.vehicles.collectAsState()
     var showDialogForId by remember { mutableStateOf<Int?>(null) }
     val backgroundGray = Color(0xFFD9D9D9)
@@ -35,29 +34,31 @@ fun MaintenanceHistoryScreen(
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(Icons.Default.ArrowBack, contentDescription = "Back")
             }
-            Text("Maintenance History", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text("Trip History", fontSize = 24.sp, fontWeight = FontWeight.Bold)
         }
         HorizontalDivider()
 
         LazyColumn {
-            items(records) { record ->
-                val vehicle = vehicles.firstOrNull { it.id == record.vehicleId }
+            items(trips) { trip ->
+                val vehicle = vehicles.firstOrNull { it.id == trip.vehicleId }
 
                 Card(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
                     Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
                             Text("Vehicle ID: ${vehicle?.vehicleId ?: "Unknown"}", fontWeight = FontWeight.Bold)
-                            Text("Date: ${record.date}")
-                            Text("Problem: ${record.problem}")
+                            Text("Date: ${trip.date}")
+                            Text("Driver: ${trip.driverName}")
+                            Text("Description: ${trip.description}")
+                            Text("Destination: ${trip.destination}")
                             Text(
-                                "Status: ${record.status}",
-                                color = if (record.status == "Completed") Color.Green else Color.Red,
+                                "Status: ${trip.status}",
+                                color = if (trip.status == "Completed") Color.Green else Color.Red,
                                 fontWeight = FontWeight.Bold
                             )
 
-                            if (record.status == "Pending") {
+                            if (trip.status == "Pending") {
                                 Button(
-                                    onClick = { showDialogForId = record.id },
+                                    onClick = { showDialogForId = trip.id },
                                     modifier = Modifier.padding(top = 8.dp),
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800))
                                 ) {
@@ -65,21 +66,21 @@ fun MaintenanceHistoryScreen(
                                 }
                             }
                         }
-                        IconButton(onClick = { maintenanceVm.delete(record) }) {
+                        IconButton(onClick = { tripVm.delete(trip) }) {
                             Icon(Icons.Default.Delete, contentDescription = "Delete")
                         }
                     }
                 }
 
-                // The Popup Dialog
-                if (showDialogForId == record.id) {
+                // Popup Dialog
+                if (showDialogForId == trip.id) {
                     AlertDialog(
                         onDismissRequest = { showDialogForId = null },
                         title = { Text("Confirm") },
-                        text = { Text("Is the maintenance completed?") },
+                        text = { Text("Is the trip completed?") },
                         confirmButton = {
                             TextButton(onClick = {
-                                maintenanceVm.update(record.copy(status = "Completed"))
+                                tripVm.update(trip.copy(status = "Completed"))
                                 showDialogForId = null
                             }) { Text("Yes") }
                         },

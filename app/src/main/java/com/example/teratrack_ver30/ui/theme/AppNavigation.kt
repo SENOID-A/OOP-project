@@ -1,4 +1,4 @@
-package com.example.teratrack_ver30
+package com.example.teratrack_ver30.ui.theme
 
 import android.widget.Toast
 import androidx.compose.runtime.Composable
@@ -6,6 +6,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -15,19 +17,8 @@ import com.example.teratrack_ver30.data.AppContainer
 import kotlinx.coroutines.launch
 
 // UI & ViewModels (Make sure your packages match)
-import com.example.teratrack_ver30.VehicleViewModel
-import com.example.teratrack_ver30.DriverViewModel
-import com.example.teratrack_ver30.MaintenanceViewModel
-import com.example.teratrack_ver30.TripViewModel
 
 import com.example.teratrack_ver30.ui.VehicleListScreen
-import com.example.teratrack_ver30.AddVehicleScreen
-import com.example.teratrack_ver30.DriverListScreen
-import com.example.teratrack_ver30.AddDriverScreen
-import com.example.teratrack_ver30.MaintenanceHistoryScreen
-import com.example.teratrack_ver30.ScheduleMaintenanceScreen
-import com.example.teratrack_ver30.TripHistoryScreen
-import com.example.teratrack_ver30.ScheduleTripScreen
 
 @Composable
 fun AppNavigation(userRepository: UserRepository) {
@@ -40,8 +31,8 @@ fun AppNavigation(userRepository: UserRepository) {
     val container = remember { AppContainer(context) }
 
     val vehicleVm: VehicleViewModel = viewModel(
-        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
-            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
                 return VehicleViewModel(container.vehicleRepository) as T
             }
@@ -49,8 +40,8 @@ fun AppNavigation(userRepository: UserRepository) {
     )
 
     val driverVm: DriverViewModel = viewModel(
-        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
-            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
                 return DriverViewModel(container.driverRepository) as T
             }
@@ -58,8 +49,8 @@ fun AppNavigation(userRepository: UserRepository) {
     )
 
     val maintenanceVm: MaintenanceViewModel = viewModel(
-        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
-            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
                 return MaintenanceViewModel(container.maintenanceRepository) as T
             }
@@ -67,8 +58,8 @@ fun AppNavigation(userRepository: UserRepository) {
     )
 
     val tripVm: TripViewModel = viewModel(
-        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
-            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
                 return TripViewModel(container.tripRepository, container.warehouseRepository) as T
             }
