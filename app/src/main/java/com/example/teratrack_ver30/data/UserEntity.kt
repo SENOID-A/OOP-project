@@ -9,3 +9,4 @@ data class UserEntity(
     val password: String,
     val favouriteWord: String
 )
+

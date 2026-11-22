@@ -6,7 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
-import com.example.teratrack_ver30.data.AppDatabase
+import com.example.teratrack_ver30.data.UserDatabase
 import com.example.teratrack_ver30.repository.RoomUserRepository
 import com.example.teratrack_ver30.repository.UserRepository
 import com.example.teratrack_ver30.ui.theme.Teratrack_ver30Theme
@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         // 2. Initialize the Database and Repository
-        val db = AppDatabase.getDatabase(this)
+        val db = UserDatabase.getDatabase(this)
         userRepository = RoomUserRepository(db.userDao())
 
         setContent {

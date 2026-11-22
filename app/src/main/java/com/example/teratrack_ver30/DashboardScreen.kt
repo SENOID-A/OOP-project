@@ -2,13 +2,19 @@ package com.example.teratrack_ver30
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -17,112 +23,160 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 
 @Composable
 fun DashboardScreen(
     onNavigateToVehicles: () -> Unit,
     onNavigateToDrivers: () -> Unit,
+    onNavigateToAddVehicle: () -> Unit,
+    onNavigateToAddDriver: () -> Unit,
     onNavigateToMaintenance: () -> Unit,
-    onNavigateToTrips: () -> Unit
+    onNavigateToScheduleMaintenance: () -> Unit,
+    onNavigateToTrips: () -> Unit,
+    onNavigateToScheduleTrip: () -> Unit,
+    onNavigateToMap: () -> Unit
 ) {
-    // The dark navy blue from your screenshot
     val darkBlue = Color(0xFF0D1B3E)
     val backgroundGray = Color(0xFFD9D9D9)
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundGray)
-    ) {
-        // Top Header
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(darkBlue)
-                .padding(top = 40.dp, bottom = 60.dp, start = 20.dp, end = 20.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Menu,
-                contentDescription = "Menu",
-                tint = Color.White,
-                modifier = Modifier.size(32.dp)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "TeraTrack",
-                color = Color.White,
-                fontSize = 40.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
 
-        // Floating Logo Badge
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 160.dp) // Adjust based on header height
-                .size(80.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(darkBlue),
-            contentAlignment = Alignment.Center
-        ) {
-            // Replace with your actual logo drawable
-            Image(
-                painter = painterResource(id = R.drawable.icon),
-                contentDescription = "Logo",
-//                tint = Color(0xFFFF6B00),
-                modifier = Modifier.size(100.dp)
-            )
-        }
-
-        // The 2x2 Grid
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 250.dp, start = 16.dp, end = 16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet(
+                drawerContainerColor = darkBlue,
+                modifier = Modifier.width(280.dp)
             ) {
-                DashboardCard(
-                    title = "Vehicle",
-                    iconResId = R.drawable.truck, // Replace with your truck icon
-                    modifier = Modifier.weight(1f),
-                    onViewClick = onNavigateToVehicles,
-                    onAddClick = { /* TODO: Navigate to Add Vehicle */ },
-                    darkBlue = darkBlue
-                )
-                DashboardCard(
-                    title = "Driver",
-                    iconResId = R.drawable.driver, // Replace with your driver icon
-                    modifier = Modifier.weight(1f),
-                    onViewClick = onNavigateToDrivers,
-                    onAddClick = { /* TODO: Navigate to Add Driver */ },
-                    darkBlue = darkBlue
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(24.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier.size(64.dp).clip(RoundedCornerShape(50)).background(Color.Gray),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Default.Person, contentDescription = null, tint = Color.White, modifier = Modifier.size(32.dp))
+                    }
+                    Spacer(Modifier.width(16.dp))
+                    Text("User Name", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
+
+                HorizontalDivider(color = Color.Gray, modifier = Modifier.padding(horizontal = 16.dp))
+                Spacer(Modifier.height(16.dp))
+
+                NavigationDrawerItem(
+                    label = { Text("Fleet Map", color = Color.White) },
+                    icon = { Icon(Icons.Default.Map, contentDescription = null, tint = Color.White) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onNavigateToMap()
+                    },
+                    colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent)
                 )
             }
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+        }
+    ) {
+        // MAIN DASHBOARD CONTENT
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(backgroundGray)
+        ) {
+            // Top Header
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(darkBlue)
+                    .padding(top = 40.dp, bottom = 60.dp, start = 20.dp, end = 20.dp)
             ) {
-                DashboardCard(
-                    title = "Maintenance",
-                    iconResId = R.drawable.maintenance, // Replace with your clipboard icon
-                    modifier = Modifier.weight(1f),
-                    onViewClick = onNavigateToMaintenance,
-                    onAddClick = { /* TODO: Navigate to Add Maintenance */ },
-                    darkBlue = darkBlue
+                Icon(
+                    imageVector = Icons.Default.Menu,
+                    contentDescription = "Menu",
+                    tint = Color.White,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clickable { scope.launch { drawerState.open() } }
                 )
-                DashboardCard(
-                    title = "Setup Trips",
-                    iconResId = R.drawable.trip, // Replace with your route icon
-                    modifier = Modifier.weight(1f),
-                    onViewClick = onNavigateToTrips,
-                    onAddClick = { /* TODO: Navigate to Add Trip */ },
-                    darkBlue = darkBlue
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "TeraTrack",
+                    color = Color.White,
+                    fontSize = 40.sp,
+                    fontWeight = FontWeight.Bold
                 )
+            }
+
+            // Floating Logo Badge
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 140.dp) // Adjusted
+                    .size(80.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(darkBlue),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.icon),
+                    contentDescription = "Logo",
+                    modifier = Modifier.size(100.dp)
+                )
+            }
+
+            // THE SCROLLABLE GRID
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 230.dp, start = 16.dp, end = 16.dp, bottom = 16.dp) // Adjusted top padding
+                    .verticalScroll(rememberScrollState()) // <-- THIS FIXES THE MISSING BUTTONS
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    DashboardCard(
+                        title = "Vehicle",
+                        iconResId = R.drawable.truck,
+                        modifier = Modifier.weight(1f),
+                        onViewClick = onNavigateToVehicles,
+                        onAddClick = onNavigateToAddVehicle,
+                        darkBlue = darkBlue
+                    )
+                    DashboardCard(
+                        title = "Driver",
+                        iconResId = R.drawable.driver,
+                        modifier = Modifier.weight(1f),
+                        onViewClick = onNavigateToDrivers,
+                        onAddClick = onNavigateToAddDriver,
+                        darkBlue = darkBlue
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    DashboardCard(
+                        title = "Maintenance",
+                        iconResId = R.drawable.maintenance,
+                        modifier = Modifier.weight(1f),
+                        onViewClick = onNavigateToMaintenance,
+                        onAddClick = onNavigateToScheduleMaintenance,
+                        darkBlue = darkBlue
+                    )
+                    DashboardCard(
+                        title = "Setup Trips",
+                        iconResId = R.drawable.trip,
+                        modifier = Modifier.weight(1f),
+                        onViewClick = onNavigateToTrips,
+                        onAddClick = onNavigateToScheduleTrip,
+                        darkBlue = darkBlue
+                    )
+                }
             }
         }
     }
@@ -149,45 +203,35 @@ fun DashboardCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Title
             Text(
                 text = title,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = darkBlue
             )
-
-            // Icon
             Icon(
                 painter = painterResource(id = iconResId),
                 contentDescription = title,
                 modifier = Modifier.size(64.dp),
                 tint = Color.Black
             )
-
-            // Bottom Buttons (View and +)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // View Button
                 Button(
                     onClick = onViewClick,
                     colors = ButtonDefaults.buttonColors(containerColor = darkBlue),
-                    shape = RoundedCornerShape(50), // Pill shape
+                    shape = RoundedCornerShape(50),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
                     modifier = Modifier.height(32.dp)
                 ) {
                     Text(text = "view", fontSize = 20.sp, color = Color.White)
                 }
-
-                // Plus Icon Button
                 IconButton(
                     onClick = onAddClick,
-                    modifier = Modifier
-                        .size(32.dp)
-                        .background(Color.Transparent)
+                    modifier = Modifier.size(32.dp).background(Color.Transparent)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
