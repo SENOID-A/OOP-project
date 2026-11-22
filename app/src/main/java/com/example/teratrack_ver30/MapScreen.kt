@@ -2,22 +2,33 @@
 package com.example.teratrack_ver30
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.drawable.BitmapDrawable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
@@ -32,29 +43,36 @@ fun MapScreen(
     tripVm: TripViewModel,
     vehicleVm: VehicleViewModel
 ) {
-    val context = LocalContext.current
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     val trips by tripVm.trips.collectAsState()
     val warehouses by tripVm.warehouses.collectAsState()
+    val vehicles by vehicleVm.vehicles.collectAsState()
 
-    val activeTrips = trips.filter { it.status != "Completed" }
+    var selectedTripId by remember {
+        mutableStateOf<Int?>(null)
+    }
 
-    // Configure OSMDroid before creating the map.
-    LaunchedEffect(Unit) {
-        Configuration.getInstance().apply {
-            load(context, context.getSharedPreferences(
-                "osmdroid",
-                Context.MODE_PRIVATE
-            ))
+    var expanded by remember {
+        mutableStateOf(false)
+    }
 
-            userAgentValue = context.packageName
+    var routeMessage by remember {
+        mutableStateOf("Select a trip to view its route.")
+    }
 
-            additionalHttpRequestProperties["Referer"] =
-                "https://github.com/SENOID-A/OOP-project/"
+    val selectedTrip = trips.firstOrNull {
+        it.id == selectedTripId
+    } ?: trips.firstOrNull()
+
+    val selectedVehicle = selectedTrip?.let { trip ->
+        vehicles.firstOrNull {
+            it.id == trip.vehicleId
         }
     }
 
-    val mapView = remember {
+    // MAP INITIALIZATION
+    val mapView = remember(context) {
         MapView(context).apply {
             setTileSource(TileSourceFactory.MAPNIK)
             setMultiTouchControls(true)
@@ -73,79 +91,119 @@ fun MapScreen(
         }
     }
 
-    LaunchedEffect(activeTrips, warehouses) {
+    // LOAD AND DRAW THE SELECTED TRIP ROUTE
+    LaunchedEffect(selectedTrip, warehouses) {
+
         mapView.overlays.clear()
 
-        var pointsForZoom = mutableListOf<GeoPoint>()
+        val trip = selectedTrip
 
-        for (trip in activeTrips) {
-
-            val startWarehouse = warehouses.firstOrNull {
-                it.warehouseName == trip.startPoint
-            }
-
-            val destWarehouse = warehouses.firstOrNull {
-                it.warehouseName == trip.destination
-            }
-
-            if (startWarehouse == null || destWarehouse == null) {
-                continue
-            }
-
-            val startGeo = GeoPoint(
-                startWarehouse.latitude,
-                startWarehouse.longitude
-            )
-
-            val destGeo = GeoPoint(
-                destWarehouse.latitude,
-                destWarehouse.longitude
-            )
-
-            // Add starting marker.
-            val startMarker = Marker(mapView).apply {
-                position = startGeo
-                title = "Starting Point: ${trip.startPoint}"
-                setAnchor(
-                    Marker.ANCHOR_CENTER,
-                    Marker.ANCHOR_BOTTOM
-                )
-            }
-
-            // Add destination marker.
-            val destMarker = Marker(mapView).apply {
-                position = destGeo
-                title = "Destination: ${trip.destination}"
-                setAnchor(
-                    Marker.ANCHOR_CENTER,
-                    Marker.ANCHOR_BOTTOM
-                )
-            }
-
-            mapView.overlays.add(startMarker)
-            mapView.overlays.add(destMarker)
-
-            // Get the actual road route from OSRM.
-            val routePoints = fetchRoadRoute(startGeo, destGeo)
-
-            if (routePoints.size >= 2) {
-                val roadRoute = Polyline().apply {
-                    setPoints(routePoints)
-                    title = "Trip Route"
-                }
-
-                mapView.overlays.add(roadRoute)
-                pointsForZoom.addAll(routePoints)
-            } else {
-                pointsForZoom.add(startGeo)
-                pointsForZoom.add(destGeo)
-            }
+        if (trip == null) {
+            routeMessage = "No scheduled trips available."
+            mapView.invalidate()
+            return@LaunchedEffect
         }
 
-        if (pointsForZoom.isNotEmpty()) {
+        routeMessage = "Finding warehouse locations..."
+
+        val startWarehouse = warehouses.firstOrNull {
+            it.warehouseName.trim().equals(
+                trip.startPoint.trim(),
+                ignoreCase = true
+            )
+        }
+
+        val destinationWarehouse = warehouses.firstOrNull {
+            it.warehouseName.trim().equals(
+                trip.destination.trim(),
+                ignoreCase = true
+            )
+        }
+
+        if (startWarehouse == null || destinationWarehouse == null) {
+            routeMessage =
+                "Warehouse coordinates not found. Check your warehouse records."
+
+            mapView.invalidate()
+            return@LaunchedEffect
+        }
+
+        val startPoint = GeoPoint(
+            startWarehouse.latitude,
+            startWarehouse.longitude
+        )
+
+        val destinationPoint = GeoPoint(
+            destinationWarehouse.latitude,
+            destinationWarehouse.longitude
+        )
+
+        // VEHICLE MARKER
+        val vehicleMarker = Marker(mapView).apply {
+            position = startPoint
+            title = "Vehicle: ${selectedVehicle?.vehicleId ?: "Unknown"}"
+            snippet = "Driver: ${trip.driverName}"
+
+            icon = createVehicleIcon(context)
+
+            setAnchor(
+                Marker.ANCHOR_CENTER,
+                Marker.ANCHOR_BOTTOM
+            )
+        }
+
+        // DESTINATION MARKER
+        val destinationMarker = Marker(mapView).apply {
+            position = destinationPoint
+            title = "Destination: ${trip.destination}"
+            snippet = "Trip #${trip.id}"
+
+            setAnchor(
+                Marker.ANCHOR_CENTER,
+                Marker.ANCHOR_BOTTOM
+            )
+        }
+
+        mapView.overlays.add(vehicleMarker)
+        mapView.overlays.add(destinationMarker)
+
+        // FETCH ROAD ROUTE
+        routeMessage = "Loading road route..."
+
+        val routePoints = fetchRoadRoute(
+            startPoint,
+            destinationPoint
+        )
+
+        if (routePoints.size >= 2) {
+
+            val routeLine = Polyline().apply {
+                setPoints(routePoints)
+                title = "Trip #${trip.id} Route"
+                setColor(android.graphics.Color.BLUE)
+                setWidth(12f)
+            }
+
+            mapView.overlays.add(routeLine)
+
+            routeMessage = "Road route loaded successfully."
+
+            val allPoints = routePoints + startPoint + destinationPoint
+
             mapView.zoomToBoundingBox(
-                org.osmdroid.util.BoundingBox.fromGeoPoints(
-                    pointsForZoom
+                BoundingBox.fromGeoPoints(allPoints),
+                true,
+                100
+            )
+
+        } else {
+
+            routeMessage =
+                "Unable to retrieve the road route. Check your internet connection or routing service."
+
+            mapView.zoomToBoundingBox(
+                BoundingBox.fromGeoPoints(
+                    listOf(startPoint, destinationPoint)
                 ),
                 true,
                 100
@@ -177,16 +235,228 @@ fun MapScreen(
         }
     ) { paddingValues ->
 
-        AndroidView(
-            factory = { mapView },
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-        )
+                .padding(12.dp)
+                .clipToBounds()
+        ) {
+
+            // =====================================
+            // TRIP INFORMATION — TOP 45%
+            // =====================================
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(0.45f, fill = true)
+                    .verticalScroll(rememberScrollState())
+                    .clipToBounds()
+            ) {
+
+                // TRIP SELECTOR
+                Box(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+
+                    OutlinedTextField(
+                        value = selectedTrip?.let {
+                            "Trip #${it.id}: ${it.startPoint} → ${it.destination}"
+                        } ?: "No trips available",
+                        onValueChange = {},
+                        readOnly = true,
+                        label = {
+                            Text("Select Trip")
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = trips.isNotEmpty()
+                    )
+
+                    if (trips.isNotEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(65.dp)
+                                .align(Alignment.Center)
+                                .clickable {
+                                    expanded = true
+                                }
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = {
+                            expanded = false
+                        }
+                    ) {
+                        trips.forEach { trip ->
+
+                            DropdownMenuItem(
+                                text = {
+                                    Column {
+                                        Text(
+                                            "Trip #${trip.id}",
+                                            fontWeight = FontWeight.Bold
+                                        )
+
+                                        Text(
+                                            "${trip.startPoint} → ${trip.destination}",
+                                            fontSize = 12.sp
+                                        )
+
+                                        Text(
+                                            "${trip.date} | ${trip.status}",
+                                            fontSize = 11.sp
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    selectedTripId = trip.id
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // TRIP DETAILS
+                selectedTrip?.let { trip ->
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+
+                            Text(
+                                "Trip Information",
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Text(
+                                "Vehicle: ${selectedVehicle?.vehicleId ?: "Unknown"}"
+                            )
+
+                            Text(
+                                "Driver: ${trip.driverName}"
+                            )
+
+                            Text(
+                                "Description: ${trip.description.ifBlank { "None" }}"
+                            )
+
+                            Text(
+                                "Starting Point: ${trip.startPoint}"
+                            )
+
+                            Text(
+                                "Destination: ${trip.destination}"
+                            )
+
+                            Text(
+                                "Scheduled Date: ${trip.date}"
+                            )
+
+                            Text(
+                                "Status: ${trip.status}"
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // ROUTE STATUS
+                Text(
+                    text = routeMessage,
+                    fontSize = 12.sp,
+                    color = Color.Gray
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // =====================================
+            // MAP — BOTTOM 55%
+            // =====================================
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(0.55f, fill = true)
+                    .clipToBounds()
+            ) {
+
+                AndroidView(
+                    factory = {
+                        mapView
+                    },
+                    modifier = Modifier.fillMaxSize(),
+                    update = {
+                        it.onResume()
+                    }
+                )
+
+                Text(
+                    text = "© OpenStreetMap contributors",
+                    fontSize = 10.sp,
+                    color = Color.DarkGray,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .background(
+                            Color.White.copy(alpha = 0.85f)
+                        )
+                        .padding(4.dp)
+                )
+            }
+        }
     }
 }
 
-// Retrieves the actual road route using OSRM.
+// =====================================
+// VEHICLE ICON
+// =====================================
+
+fun createVehicleIcon(context: Context): BitmapDrawable {
+
+    val size = 128
+
+    val bitmap = Bitmap.createBitmap(
+        size,
+        size,
+        Bitmap.Config.ARGB_8888
+    )
+
+    val canvas = Canvas(bitmap)
+
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        textSize = 96f
+        textAlign = Paint.Align.CENTER
+    }
+
+    canvas.drawText(
+        "🚚",
+        size / 2f,
+        100f,
+        paint
+    )
+
+    return BitmapDrawable(
+        context.resources,
+        bitmap
+    )
+}
+
+// =====================================
+// OSRM ROAD ROUTE FETCHING
+// =====================================
+
 suspend fun fetchRoadRoute(
     start: GeoPoint,
     end: GeoPoint
@@ -197,6 +467,7 @@ suspend fun fetchRoadRoute(
         var connection: HttpURLConnection? = null
 
         try {
+
             val urlString =
                 "https://router.project-osrm.org/route/v1/driving/" +
                         "${start.longitude},${start.latitude};" +
@@ -211,17 +482,26 @@ suspend fun fetchRoadRoute(
             connection.connectTimeout = 15000
             connection.readTimeout = 15000
 
-            val responseCode = connection.responseCode
+            connection.setRequestProperty(
+                "User-Agent",
+                "TeraTrack/1.0 (com.example.teratrack_ver30)"
+            )
 
-            if (responseCode != HttpURLConnection.HTTP_OK) {
+            if (connection.responseCode != HttpURLConnection.HTTP_OK) {
                 return@withContext emptyList()
             }
 
             val response = connection.inputStream
                 .bufferedReader()
-                .use { it.readText() }
+                .use {
+                    it.readText()
+                }
 
             val json = JSONObject(response)
+
+            if (json.optString("code") != "Ok") {
+                return@withContext emptyList()
+            }
 
             val routes = json.getJSONArray("routes")
 
@@ -229,11 +509,10 @@ suspend fun fetchRoadRoute(
                 return@withContext emptyList()
             }
 
-            val geometry = routes
+            val coordinates = routes
                 .getJSONObject(0)
                 .getJSONObject("geometry")
-
-            val coordinates = geometry.getJSONArray("coordinates")
+                .getJSONArray("coordinates")
 
             val routePoints = mutableListOf<GeoPoint>()
 
@@ -252,6 +531,7 @@ suspend fun fetchRoadRoute(
             routePoints
 
         } catch (e: Exception) {
+
             e.printStackTrace()
             emptyList()
 
