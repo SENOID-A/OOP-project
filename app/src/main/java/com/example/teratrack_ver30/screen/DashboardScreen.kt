@@ -1,6 +1,6 @@
+package com.example.teratrack_ver30.screen
 
-package com.example.teratrack_ver30
-
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -32,7 +32,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.res.painterResource
+import com.example.teratrack_ver30.R
 import kotlinx.coroutines.launch
 
 @Composable
@@ -57,7 +58,7 @@ fun DashboardScreen(
 
     // Get the saved profile image for this account.
     val preferences = remember {
-        context.getSharedPreferences("TeraTrackProfile", android.content.Context.MODE_PRIVATE)
+        context.getSharedPreferences("TeraTrackProfile", Context.MODE_PRIVATE)
     }
 
     var profileImageUri by remember(userName) {
@@ -256,7 +257,7 @@ fun DashboardScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Image(
-                    painter = androidx.compose.ui.res.painterResource(
+                    painter = painterResource(
                         id = R.drawable.icon
                     ),
                     contentDescription = "Logo",
@@ -358,7 +359,7 @@ fun DashboardCard(
             )
 
             Icon(
-                painter = androidx.compose.ui.res.painterResource(id = iconResId),
+                painter = painterResource(id = iconResId),
                 contentDescription = title,
                 modifier = Modifier.size(64.dp),
                 tint = Color.Black

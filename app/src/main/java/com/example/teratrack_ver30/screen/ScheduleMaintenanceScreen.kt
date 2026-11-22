@@ -1,4 +1,4 @@
-package com.example.teratrack_ver30
+package com.example.teratrack_ver30.screen
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,6 +14,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.teratrack_ver30.viewModel.MaintenanceViewModel
+import com.example.teratrack_ver30.viewModel.VehicleViewModel
 import com.example.teratrack_ver30.data.MaintenanceEntity
 import kotlinx.coroutines.launch
 import java.util.Calendar

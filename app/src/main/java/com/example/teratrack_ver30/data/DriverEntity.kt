@@ -21,9 +21,11 @@ import androidx.room3.PrimaryKey
     ]
 )
 data class DriverEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @PrimaryKey(autoGenerate = true) override val id: Int = 0,
     val name: String,
     val address: String,
     val phone: String,
     val vehicleId: Int? = null
-)
+) : BaseEntity() {
+    override fun describe(): String = "Driver $name, $phone"
+}

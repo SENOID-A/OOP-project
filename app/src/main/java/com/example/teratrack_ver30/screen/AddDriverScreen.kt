@@ -1,4 +1,4 @@
-package com.example.teratrack_ver30
+package com.example.teratrack_ver30.screen
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -12,6 +12,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.teratrack_ver30.viewModel.DriverViewModel
+import com.example.teratrack_ver30.viewModel.VehicleViewModel
 import com.example.teratrack_ver30.data.DriverEntity
 import kotlinx.coroutines.launch
 
@@ -20,11 +22,8 @@ import kotlinx.coroutines.launch
 fun AddDriverScreen(
     navController: NavController,
     driverVm: DriverViewModel,
-    vehicleVm: VehicleViewModel
+    vehicleVm: VehicleViewModel // not required anymore; kept so the existing navigation call still compiles
 ) {
-
-    val vehicles by vehicleVm.vehicles.collectAsState()
-
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -33,56 +32,6 @@ fun AddDriverScreen(
     var name by remember { mutableStateOf("") }
     var address by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
-
-    // Require at least one vehicle
-    if (vehicles.isEmpty()) {
-
-        Scaffold(
-            snackbarHost = { SnackbarHost(snackbarHostState) },
-            containerColor = Color(0xFF0D1B3E)
-        ) { padding ->
-
-            Column(
-                Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .padding(16.dp)
-            ) {
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-
-                    IconButton(
-                        onClick = {
-                            navController.popBackStack()
-                        }
-                    ) {
-                        Icon(
-                            Icons.Default.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.White
-                        )
-                    }
-
-                    Text(
-                        "Add Driver",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
-
-                HorizontalDivider(color = Color.Gray)
-
-                Text(
-                    "You must add at least one vehicle before adding a driver.",
-                    color = Color.Red,
-                    modifier = Modifier.padding(top = 24.dp)
-                )
-            }
-        }
-
-        return
-    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -98,11 +47,8 @@ fun AddDriverScreen(
 
             // Header
             Row(verticalAlignment = Alignment.CenterVertically) {
-
                 IconButton(
-                    onClick = {
-                        if (!isSaving) navController.popBackStack()
-                    },
+                    onClick = { if (!isSaving) navController.popBackStack() },
                     enabled = !isSaving
                 ) {
                     Icon(
@@ -129,63 +75,44 @@ fun AddDriverScreen(
                 unfocusedContainerColor = Color.White
             )
 
-            // Name
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
                 label = { Text("Name") },
                 enabled = !isSaving,
                 colors = fieldColors,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp)
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
             )
 
-            // Address
             OutlinedTextField(
                 value = address,
                 onValueChange = { address = it },
                 label = { Text("Address") },
                 enabled = !isSaving,
                 colors = fieldColors,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
             )
 
-            // Phone
             OutlinedTextField(
                 value = phone,
                 onValueChange = { phone = it },
                 label = { Text("Phone Number") },
                 enabled = !isSaving,
                 colors = fieldColors,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
             )
 
-            // ADD BUTTON
             Button(
                 onClick = {
-
                     if (isSaving) return@Button
 
                     if (name.isBlank()) {
-                        scope.launch {
-                            snackbarHostState.showSnackbar(
-                                "Name cannot be empty"
-                            )
-                        }
+                        scope.launch { snackbarHostState.showSnackbar("Name cannot be empty") }
                         return@Button
                     }
 
                     if (phone.length < 7) {
-                        scope.launch {
-                            snackbarHostState.showSnackbar(
-                                "Phone number must be valid"
-                            )
-                        }
+                        scope.launch { snackbarHostState.showSnackbar("Phone number must be valid") }
                         return@Button
                     }
 
@@ -193,7 +120,7 @@ fun AddDriverScreen(
 
                     scope.launch {
                         try {
-
+                            // vehicleId is null: the driver starts unassigned
                             driverVm.add(
                                 DriverEntity(
                                     name = name.trim(),
@@ -201,26 +128,18 @@ fun AddDriverScreen(
                                     phone = phone.trim()
                                 )
                             )
-
                             navController.popBackStack()
-
                         } catch (e: Exception) {
-
                             isSaving = false
-
                             snackbarHostState.showSnackbar(
-                                "Could not add driver: ${
-                                    e.localizedMessage ?: "Please try again."
-                                }"
+                                "Could not add driver: ${e.localizedMessage ?: "Please try again."}"
                             )
                         }
                     }
                 },
                 enabled = !isSaving,
                 modifier = Modifier.padding(top = 24.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFFF9800)
-                )
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800))
             ) {
                 Text(
                     text = if (isSaving) "Saving..." else "Add Driver",

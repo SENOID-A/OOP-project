@@ -1,5 +1,4 @@
-
-package com.example.teratrack_ver30
+package com.example.teratrack_ver30.dataEntry
 
 import android.widget.Toast
 import androidx.compose.runtime.Composable
@@ -19,8 +18,24 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.teratrack_ver30.repository.UserRepository
 import com.example.teratrack_ver30.data.AppContainer
+import com.example.teratrack_ver30.screen.AddDriverScreen
+import com.example.teratrack_ver30.screen.AddVehicleScreen
+import com.example.teratrack_ver30.screen.CreateAccScreen
+import com.example.teratrack_ver30.screen.DashboardScreen
+import com.example.teratrack_ver30.screen.DriverListScreen
+import com.example.teratrack_ver30.screen.ForgotPasswordScreen
+import com.example.teratrack_ver30.screen.LoginScreen
+import com.example.teratrack_ver30.screen.MaintenanceHistoryScreen
+import com.example.teratrack_ver30.screen.MapScreen
+import com.example.teratrack_ver30.screen.ScheduleMaintenanceScreen
+import com.example.teratrack_ver30.screen.ScheduleTripScreen
+import com.example.teratrack_ver30.screen.TripHistoryScreen
 import kotlinx.coroutines.launch
 import com.example.teratrack_ver30.ui.VehicleListScreen
+import com.example.teratrack_ver30.viewModel.DriverViewModel
+import com.example.teratrack_ver30.viewModel.MaintenanceViewModel
+import com.example.teratrack_ver30.viewModel.TripViewModel
+import com.example.teratrack_ver30.viewModel.VehicleViewModel
 
 @Composable
 fun AppNavigation(userRepository: UserRepository) {

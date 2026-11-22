@@ -1,5 +1,4 @@
-
-package com.example.teratrack_ver30
+package com.example.teratrack_ver30.screen
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -19,15 +18,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
+import com.example.teratrack_ver30.viewModel.TripViewModel
+import com.example.teratrack_ver30.viewModel.VehicleViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
@@ -45,7 +46,7 @@ fun MapScreen(
     tripVm: TripViewModel,
     vehicleVm: VehicleViewModel
 ) {
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
 
     val trips by tripVm.trips.collectAsState()
     val warehouses by tripVm.warehouses.collectAsState()

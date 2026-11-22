@@ -1,5 +1,4 @@
-
-package com.example.teratrack_ver30
+package com.example.teratrack_ver30.dataEntry
 
 import android.app.Application
 import org.osmdroid.config.Configuration
@@ -11,7 +10,9 @@ class MyApplication : Application() {
         super.onCreate()
 
         val config = Configuration.getInstance()
-
+        config.isDebugMode = true
+        config.isDebugMapTileDownloader = true
+        
         // Clearly identify the TeraTrack Android application.
         config.userAgentValue =
             "TeraTrack/1.0 (+https://github.com/SENOID-A/OOP-project)"

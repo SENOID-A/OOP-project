@@ -19,7 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.teratrack_ver30.VehicleViewModel
+import com.example.teratrack_ver30.viewModel.VehicleViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

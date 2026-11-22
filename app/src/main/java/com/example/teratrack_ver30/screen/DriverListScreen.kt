@@ -1,4 +1,4 @@
-package com.example.teratrack_ver30
+package com.example.teratrack_ver30.screen
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,6 +14,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.teratrack_ver30.viewModel.DriverViewModel
+import com.example.teratrack_ver30.viewModel.VehicleViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

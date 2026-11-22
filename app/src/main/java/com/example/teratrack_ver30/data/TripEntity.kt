@@ -11,7 +11,7 @@ import androidx.room3.PrimaryKey
     ]
 )
 data class TripEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @PrimaryKey(autoGenerate = true) override val id: Int = 0,
     val vehicleId: Int,
     val driverName: String,
     val description: String,
@@ -19,4 +19,6 @@ data class TripEntity(
     val destination: String,
     val date: String,
     val status: String = "Pending"
-)   
+) : BaseEntity() {
+    override fun describe(): String = "Trip #$id: $startPoint to $destination ($status)"
+}
