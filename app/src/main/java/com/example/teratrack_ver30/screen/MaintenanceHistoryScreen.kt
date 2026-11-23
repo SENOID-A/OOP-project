@@ -1,3 +1,4 @@
+
 package com.example.teratrack_ver30.screen
 
 import androidx.compose.foundation.background
@@ -33,8 +34,16 @@ fun MaintenanceHistoryScreen(
 
     Column(Modifier.fillMaxSize().background(backgroundGray).padding(16.dp).padding(top = 32.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+            IconButton(
+                onClick = {
+                    // ADDED: Return directly to Dashboard
+                    navController.navigate("dashboard") {
+                        popUpTo("dashboard") { inclusive = false }
+                        launchSingleTop = true
+                    }
+                }
+            ) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Back to Dashboard")
             }
             Text("Maintenance History", fontSize = 24.sp, fontWeight = FontWeight.Bold)
         }
@@ -72,7 +81,6 @@ fun MaintenanceHistoryScreen(
                     }
                 }
 
-                // The Popup Dialog
                 if (showDialogForId == record.id) {
                     AlertDialog(
                         onDismissRequest = { showDialogForId = null },

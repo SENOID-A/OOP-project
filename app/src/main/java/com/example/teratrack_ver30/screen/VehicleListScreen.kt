@@ -1,3 +1,4 @@
+
 package com.example.teratrack_ver30.ui
 
 import android.graphics.BitmapFactory
@@ -29,8 +30,16 @@ fun VehicleListScreen(navController: NavController, vm: VehicleViewModel) {
     Column(Modifier.fillMaxSize().padding(16.dp).padding(top = 32.dp)) {
         // Header
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+            IconButton(
+                onClick = {
+                    // ADDED: Return directly to Dashboard
+                    navController.navigate("dashboard") {
+                        popUpTo("dashboard") { inclusive = false }
+                        launchSingleTop = true
+                    }
+                }
+            ) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Back to Dashboard")
             }
             Text("Vehicles", fontSize = 24.sp, fontWeight = FontWeight.Bold)
         }
@@ -44,7 +53,6 @@ fun VehicleListScreen(navController: NavController, vm: VehicleViewModel) {
                         Modifier.padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Display Image if it exists
                         vehicle.imagePath?.let { path ->
                             val bmp = BitmapFactory.decodeFile(path)
                             if (bmp != null) {
@@ -57,13 +65,11 @@ fun VehicleListScreen(navController: NavController, vm: VehicleViewModel) {
                             }
                         }
 
-                        // Text Details
                         Column(Modifier.weight(1f)) {
                             Text("Vehicle ID: ${vehicle.vehicleId}", fontWeight = FontWeight.Bold)
                             Text("Driver: ${vehicle.driverName ?: "Unassigned"}")
                         }
 
-                        // Delete Button
                         IconButton(onClick = { vm.delete(vehicle) }) {
                             Icon(Icons.Default.Delete, contentDescription = "Delete")
                         }

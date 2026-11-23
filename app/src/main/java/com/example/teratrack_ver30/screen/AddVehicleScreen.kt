@@ -1,3 +1,4 @@
+
 package com.example.teratrack_ver30.screen
 
 import android.graphics.Bitmap
@@ -56,7 +57,6 @@ fun AddVehicleScreen(navController: NavController, vm: VehicleViewModel) {
             }
 
             imagePath = file.absolutePath
-
         } catch (e: Exception) {
             scope.launch {
                 snackbarHostState.showSnackbar("Failed to save image")
@@ -81,7 +81,6 @@ fun AddVehicleScreen(navController: NavController, vm: VehicleViewModel) {
             }
 
             imagePath = file.absolutePath
-
         } catch (e: Exception) {
             scope.launch {
                 snackbarHostState.showSnackbar("Failed to save image")
@@ -100,19 +99,23 @@ fun AddVehicleScreen(navController: NavController, vm: VehicleViewModel) {
                 .padding(padding)
                 .padding(16.dp)
         ) {
-
             // Header
             Row(verticalAlignment = Alignment.CenterVertically) {
-
                 IconButton(
                     onClick = {
-                        if (!isSaving) navController.popBackStack()
+                        if (!isSaving) {
+                            // ADDED: Return directly to Dashboard
+                            navController.navigate("dashboard") {
+                                popUpTo("dashboard") { inclusive = false }
+                                launchSingleTop = true
+                            }
+                        }
                     },
                     enabled = !isSaving
                 ) {
                     Icon(
                         Icons.Default.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = "Back to Dashboard",
                         tint = Color.White
                     )
                 }
@@ -146,11 +149,8 @@ fun AddVehicleScreen(navController: NavController, vm: VehicleViewModel) {
 
             // Image Buttons
             Row(Modifier.padding(top = 16.dp)) {
-
                 Button(
-                    onClick = {
-                        galleryLauncher.launch("image/*")
-                    },
+                    onClick = { galleryLauncher.launch("image/*") },
                     enabled = !isSaving,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFFFF9800),
@@ -163,9 +163,7 @@ fun AddVehicleScreen(navController: NavController, vm: VehicleViewModel) {
                 Spacer(Modifier.width(8.dp))
 
                 Button(
-                    onClick = {
-                        cameraLauncher.launch(null)
-                    },
+                    onClick = { cameraLauncher.launch(null) },
                     enabled = !isSaving,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFFFF9800),
@@ -178,7 +176,6 @@ fun AddVehicleScreen(navController: NavController, vm: VehicleViewModel) {
 
             // Image Preview
             imagePath?.let { path ->
-
                 val bitmap = BitmapFactory.decodeFile(path)
 
                 if (bitmap != null) {
@@ -195,24 +192,19 @@ fun AddVehicleScreen(navController: NavController, vm: VehicleViewModel) {
             // ADD BUTTON
             Button(
                 onClick = {
-
                     if (isSaving) return@Button
 
                     if (vehicleId.isBlank()) {
                         scope.launch {
-                            snackbarHostState.showSnackbar(
-                                "Vehicle ID cannot be empty"
-                            )
+                            snackbarHostState.showSnackbar("Vehicle ID cannot be empty")
                         }
                         return@Button
                     }
 
-                    // Prevent another submission immediately
                     isSaving = true
 
                     scope.launch {
                         try {
-
                             vm.add(
                                 VehicleEntity(
                                     vehicleId = vehicleId.trim(),
@@ -220,13 +212,10 @@ fun AddVehicleScreen(navController: NavController, vm: VehicleViewModel) {
                                 )
                             )
 
-                            // Navigate only after successful save
+                            // Keep the existing save-success navigation
                             navController.popBackStack()
-
                         } catch (e: Exception) {
-
                             isSaving = false
-
                             snackbarHostState.showSnackbar(
                                 "Could not add vehicle: ${
                                     e.localizedMessage ?: "Please try again."
@@ -242,9 +231,7 @@ fun AddVehicleScreen(navController: NavController, vm: VehicleViewModel) {
                     contentColor = Color.White
                 )
             ) {
-                Text(
-                    if (isSaving) "Saving..." else "Add Vehicle"
-                )
+                Text(if (isSaving) "Saving..." else "Add Vehicle")
             }
         }
     }

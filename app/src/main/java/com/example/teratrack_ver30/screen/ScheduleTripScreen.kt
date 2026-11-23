@@ -1,3 +1,4 @@
+
 package com.example.teratrack_ver30.screen
 
 import androidx.compose.foundation.clickable
@@ -29,7 +30,6 @@ fun ScheduleTripScreen(
     vehicleVm: VehicleViewModel,
     driverVm: DriverViewModel
 ) {
-
     val vehicles by vehicleVm.vehicles.collectAsState()
     val warehouses by tripVm.warehouses.collectAsState()
     val drivers by driverVm.drivers.collectAsState()
@@ -38,7 +38,6 @@ fun ScheduleTripScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     var isSaving by remember { mutableStateOf(false) }
-
     var selectedVehicleId by remember { mutableStateOf<Int?>(null) }
     var startPoint by remember { mutableStateOf("") }
     var destination by remember { mutableStateOf("") }
@@ -60,19 +59,23 @@ fun ScheduleTripScreen(
                 .padding(16.dp)
                 .padding(top = 16.dp)
         ) {
-
             // Header
             Row(verticalAlignment = Alignment.CenterVertically) {
-
                 IconButton(
                     onClick = {
-                        if (!isSaving) navController.popBackStack()
+                        if (!isSaving) {
+                            // ADDED: Return directly to Dashboard
+                            navController.navigate("dashboard") {
+                                popUpTo("dashboard") { inclusive = false }
+                                launchSingleTop = true
+                            }
+                        }
                     },
                     enabled = !isSaving
                 ) {
                     Icon(
                         Icons.Default.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = "Back to Dashboard",
                         tint = Color.White
                     )
                 }
@@ -101,7 +104,6 @@ fun ScheduleTripScreen(
             var vehicleExpanded by remember { mutableStateOf(false) }
 
             Box(Modifier.fillMaxWidth()) {
-
                 OutlinedTextField(
                     value = vehicles.firstOrNull {
                         it.id == selectedVehicleId
@@ -109,9 +111,7 @@ fun ScheduleTripScreen(
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Vehicle ID") },
-                    trailingIcon = {
-                        Icon(Icons.Default.ArrowDropDown, null)
-                    },
+                    trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) },
                     colors = fieldColors,
                     enabled = !isSaving,
                     modifier = Modifier.fillMaxWidth()
@@ -127,12 +127,9 @@ fun ScheduleTripScreen(
 
                 DropdownMenu(
                     expanded = vehicleExpanded,
-                    onDismissRequest = {
-                        vehicleExpanded = false
-                    }
+                    onDismissRequest = { vehicleExpanded = false }
                 ) {
                     vehicles.forEach { vehicle ->
-
                         DropdownMenuItem(
                             text = { Text(vehicle.vehicleId) },
                             onClick = {
@@ -152,19 +149,12 @@ fun ScheduleTripScreen(
                     .fillMaxWidth()
                     .padding(top = 8.dp)
             ) {
-
                 OutlinedTextField(
-                    value = if (startPoint.isEmpty()) {
-                        "Select Start Point"
-                    } else {
-                        startPoint
-                    },
+                    value = if (startPoint.isEmpty()) "Select Start Point" else startPoint,
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Start Point") },
-                    trailingIcon = {
-                        Icon(Icons.Default.ArrowDropDown, null)
-                    },
+                    trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) },
                     colors = fieldColors,
                     enabled = !isSaving,
                     modifier = Modifier.fillMaxWidth()
@@ -180,12 +170,9 @@ fun ScheduleTripScreen(
 
                 DropdownMenu(
                     expanded = startExpanded,
-                    onDismissRequest = {
-                        startExpanded = false
-                    }
+                    onDismissRequest = { startExpanded = false }
                 ) {
                     warehouses.forEach { warehouse ->
-
                         DropdownMenuItem(
                             text = { Text(warehouse.warehouseName) },
                             onClick = {
@@ -205,19 +192,12 @@ fun ScheduleTripScreen(
                     .fillMaxWidth()
                     .padding(top = 8.dp)
             ) {
-
                 OutlinedTextField(
-                    value = if (destination.isEmpty()) {
-                        "Select Destination"
-                    } else {
-                        destination
-                    },
+                    value = if (destination.isEmpty()) "Select Destination" else destination,
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Destination") },
-                    trailingIcon = {
-                        Icon(Icons.Default.ArrowDropDown, null)
-                    },
+                    trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) },
                     colors = fieldColors,
                     enabled = !isSaving,
                     modifier = Modifier.fillMaxWidth()
@@ -233,12 +213,9 @@ fun ScheduleTripScreen(
 
                 DropdownMenu(
                     expanded = destinationExpanded,
-                    onDismissRequest = {
-                        destinationExpanded = false
-                    }
+                    onDismissRequest = { destinationExpanded = false }
                 ) {
                     warehouses.forEach { warehouse ->
-
                         DropdownMenuItem(
                             text = { Text(warehouse.warehouseName) },
                             onClick = {
@@ -269,20 +246,16 @@ fun ScheduleTripScreen(
                     .padding(top = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-
                 // Month
                 var monthExpanded by remember { mutableStateOf(false) }
 
                 Box(Modifier.weight(1f)) {
-
                     OutlinedTextField(
                         value = if (month.isEmpty()) "Month" else month,
                         onValueChange = {},
                         readOnly = true,
                         enabled = !isSaving,
-                        trailingIcon = {
-                            Icon(Icons.Default.ArrowDropDown, null)
-                        },
+                        trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) },
                         colors = fieldColors
                     )
 
@@ -296,12 +269,9 @@ fun ScheduleTripScreen(
 
                     DropdownMenu(
                         expanded = monthExpanded,
-                        onDismissRequest = {
-                            monthExpanded = false
-                        }
+                        onDismissRequest = { monthExpanded = false }
                     ) {
                         (1..12).forEach { value ->
-
                             DropdownMenuItem(
                                 text = { Text(value.toString()) },
                                 onClick = {
@@ -317,15 +287,12 @@ fun ScheduleTripScreen(
                 var dayExpanded by remember { mutableStateOf(false) }
 
                 Box(Modifier.weight(1f)) {
-
                     OutlinedTextField(
                         value = if (day.isEmpty()) "Day" else day,
                         onValueChange = {},
                         readOnly = true,
                         enabled = !isSaving,
-                        trailingIcon = {
-                            Icon(Icons.Default.ArrowDropDown, null)
-                        },
+                        trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) },
                         colors = fieldColors
                     )
 
@@ -339,12 +306,9 @@ fun ScheduleTripScreen(
 
                     DropdownMenu(
                         expanded = dayExpanded,
-                        onDismissRequest = {
-                            dayExpanded = false
-                        }
+                        onDismissRequest = { dayExpanded = false }
                     ) {
                         (1..31).forEach { value ->
-
                             DropdownMenuItem(
                                 text = { Text(value.toString()) },
                                 onClick = {
@@ -360,15 +324,12 @@ fun ScheduleTripScreen(
                 var yearExpanded by remember { mutableStateOf(false) }
 
                 Box(Modifier.weight(1f)) {
-
                     OutlinedTextField(
                         value = if (year.isEmpty()) "Year" else year,
                         onValueChange = {},
                         readOnly = true,
                         enabled = !isSaving,
-                        trailingIcon = {
-                            Icon(Icons.Default.ArrowDropDown, null)
-                        },
+                        trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) },
                         colors = fieldColors
                     )
 
@@ -382,15 +343,11 @@ fun ScheduleTripScreen(
 
                     DropdownMenu(
                         expanded = yearExpanded,
-                        onDismissRequest = {
-                            yearExpanded = false
-                        }
+                        onDismissRequest = { yearExpanded = false }
                     ) {
-                        val currentYear = Calendar.getInstance()
-                            .get(Calendar.YEAR)
+                        val currentYear = Calendar.getInstance().get(Calendar.YEAR)
 
                         (currentYear..2031).forEach { value ->
-
                             DropdownMenuItem(
                                 text = { Text(value.toString()) },
                                 onClick = {
@@ -406,7 +363,6 @@ fun ScheduleTripScreen(
             // ADD BUTTON
             Button(
                 onClick = {
-
                     if (isSaving) return@Button
 
                     if (
@@ -418,15 +374,12 @@ fun ScheduleTripScreen(
                         year.isEmpty()
                     ) {
                         scope.launch {
-                            snackbarHostState.showSnackbar(
-                                "Please fill all fields"
-                            )
+                            snackbarHostState.showSnackbar("Please fill all fields")
                         }
                         return@Button
                     }
 
                     isSaving = true
-
                     val dateStr = "$month/$day/$year"
 
                     val assignedDriver = drivers.firstOrNull {
@@ -444,15 +397,12 @@ fun ScheduleTripScreen(
 
                     scope.launch {
                         try {
-
                             tripVm.add(newTrip)
 
+                            // Keep the existing save-success navigation
                             navController.popBackStack()
-
                         } catch (e: Exception) {
-
                             isSaving = false
-
                             snackbarHostState.showSnackbar(
                                 "Could not schedule trip: ${
                                     e.localizedMessage ?: "Please try again."

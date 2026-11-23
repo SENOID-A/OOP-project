@@ -1,3 +1,4 @@
+
 package com.example.teratrack_ver30.screen
 
 import androidx.compose.foundation.layout.*
@@ -31,8 +32,16 @@ fun DriverListScreen(
     Column(Modifier.fillMaxSize().padding(16.dp).padding(top = 32.dp)) {
         // Header
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+            IconButton(
+                onClick = {
+                    // ADDED: Return directly to Dashboard
+                    navController.navigate("dashboard") {
+                        popUpTo("dashboard") { inclusive = false }
+                        launchSingleTop = true
+                    }
+                }
+            ) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Back to Dashboard")
             }
             Text("Drivers", fontSize = 24.sp, fontWeight = FontWeight.Bold)
         }
@@ -40,7 +49,6 @@ fun DriverListScreen(
 
         LazyColumn {
             items(drivers) { driver ->
-                // Find if this driver has a vehicle
                 val assignedVehicle = allVehicles.firstOrNull { it.id == driver.vehicleId }
 
                 Card(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
@@ -58,8 +66,8 @@ fun DriverListScreen(
                             Text("Address: ${driver.address}")
                             Text("Phone: ${driver.phone}")
 
-                            // The Dropdown for assigning a vehicle
                             var expanded by remember { mutableStateOf(false) }
+
                             Box(Modifier.padding(top = 8.dp)) {
                                 Button(onClick = { expanded = true }) {
                                     Text("Assign Vehicle ▾")
@@ -78,7 +86,6 @@ fun DriverListScreen(
                                             DropdownMenuItem(
                                                 text = { Text(v.vehicleId) },
                                                 onClick = {
-                                                    // Update both tables!
                                                     vehicleVm.update(v.copy(driverName = driver.name))
                                                     driverVm.update(driver.copy(vehicleId = v.id))
                                                     expanded = false
@@ -90,7 +97,6 @@ fun DriverListScreen(
                             }
                         }
 
-                        // Delete Button
                         IconButton(onClick = { driverVm.delete(driver) }) {
                             Icon(Icons.Default.Delete, contentDescription = "Delete")
                         }

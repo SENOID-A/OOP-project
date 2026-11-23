@@ -1,3 +1,4 @@
+
 package com.example.teratrack_ver30.screen
 
 import androidx.compose.foundation.layout.*
@@ -22,13 +23,12 @@ import kotlinx.coroutines.launch
 fun AddDriverScreen(
     navController: NavController,
     driverVm: DriverViewModel,
-    vehicleVm: VehicleViewModel // not required anymore; kept so the existing navigation call still compiles
+    vehicleVm: VehicleViewModel
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
     var isSaving by remember { mutableStateOf(false) }
-
     var name by remember { mutableStateOf("") }
     var address by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
@@ -44,16 +44,23 @@ fun AddDriverScreen(
                 .padding(padding)
                 .padding(16.dp)
         ) {
-
             // Header
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(
-                    onClick = { if (!isSaving) navController.popBackStack() },
+                    onClick = {
+                        if (!isSaving) {
+                            // ADDED: Return directly to Dashboard
+                            navController.navigate("dashboard") {
+                                popUpTo("dashboard") { inclusive = false }
+                                launchSingleTop = true
+                            }
+                        }
+                    },
                     enabled = !isSaving
                 ) {
                     Icon(
                         Icons.Default.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = "Back to Dashboard",
                         tint = Color.White
                     )
                 }
@@ -120,7 +127,6 @@ fun AddDriverScreen(
 
                     scope.launch {
                         try {
-                            // vehicleId is null: the driver starts unassigned
                             driverVm.add(
                                 DriverEntity(
                                     name = name.trim(),
@@ -128,6 +134,8 @@ fun AddDriverScreen(
                                     phone = phone.trim()
                                 )
                             )
+
+                            // Keep the existing save-success navigation
                             navController.popBackStack()
                         } catch (e: Exception) {
                             isSaving = false

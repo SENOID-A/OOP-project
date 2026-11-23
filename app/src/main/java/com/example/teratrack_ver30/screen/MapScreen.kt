@@ -1,3 +1,4 @@
+
 package com.example.teratrack_ver30.screen
 
 import android.content.Context
@@ -52,26 +53,16 @@ fun MapScreen(
     val warehouses by tripVm.warehouses.collectAsState()
     val vehicles by vehicleVm.vehicles.collectAsState()
 
-    var selectedTripId by remember {
-        mutableStateOf<Int?>(null)
-    }
-
-    var expanded by remember {
-        mutableStateOf(false)
-    }
-
-    var routeMessage by remember {
-        mutableStateOf("Select a trip to view its route.")
-    }
+    var selectedTripId by remember { mutableStateOf<Int?>(null) }
+    var expanded by remember { mutableStateOf(false) }
+    var routeMessage by remember { mutableStateOf("Select a trip to view its route.") }
 
     val selectedTrip = trips.firstOrNull {
         it.id == selectedTripId
     } ?: trips.firstOrNull()
 
     val selectedVehicle = selectedTrip?.let { trip ->
-        vehicles.firstOrNull {
-            it.id == trip.vehicleId
-        }
+        vehicles.firstOrNull { it.id == trip.vehicleId }
     }
 
     // MAP INITIALIZATION
@@ -91,11 +82,8 @@ fun MapScreen(
         MapView(context).apply {
             setTileSource(mapTilerTiles)
             setMultiTouchControls(true)
-
             controller.setZoom(12.0)
-            controller.setCenter(
-                GeoPoint(14.2091219, 121.1554600)
-            )
+            controller.setCenter(GeoPoint(14.2091219, 121.1554600))
         }
     }
 
@@ -108,7 +96,6 @@ fun MapScreen(
 
     // LOAD AND DRAW THE SELECTED TRIP ROUTE
     LaunchedEffect(selectedTrip, warehouses) {
-
         mapView.overlays.clear()
 
         val trip = selectedTrip
@@ -122,49 +109,29 @@ fun MapScreen(
         routeMessage = "Finding warehouse locations..."
 
         val startWarehouse = warehouses.firstOrNull {
-            it.warehouseName.trim().equals(
-                trip.startPoint.trim(),
-                ignoreCase = true
-            )
+            it.warehouseName.trim().equals(trip.startPoint.trim(), ignoreCase = true)
         }
 
         val destinationWarehouse = warehouses.firstOrNull {
-            it.warehouseName.trim().equals(
-                trip.destination.trim(),
-                ignoreCase = true
-            )
+            it.warehouseName.trim().equals(trip.destination.trim(), ignoreCase = true)
         }
 
         if (startWarehouse == null || destinationWarehouse == null) {
-            routeMessage =
-                "Warehouse coordinates not found. Check your warehouse records."
-
+            routeMessage = "Warehouse coordinates not found. Check your warehouse records."
             mapView.invalidate()
             return@LaunchedEffect
         }
 
-        val startPoint = GeoPoint(
-            startWarehouse.latitude,
-            startWarehouse.longitude
-        )
-
-        val destinationPoint = GeoPoint(
-            destinationWarehouse.latitude,
-            destinationWarehouse.longitude
-        )
+        val startPoint = GeoPoint(startWarehouse.latitude, startWarehouse.longitude)
+        val destinationPoint = GeoPoint(destinationWarehouse.latitude, destinationWarehouse.longitude)
 
         // VEHICLE MARKER
         val vehicleMarker = Marker(mapView).apply {
             position = startPoint
             title = "Vehicle: ${selectedVehicle?.vehicleId ?: "Unknown"}"
             snippet = "Driver: ${trip.driverName}"
-
             icon = createVehicleIcon(context)
-
-            setAnchor(
-                Marker.ANCHOR_CENTER,
-                Marker.ANCHOR_BOTTOM
-            )
+            setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
         }
 
         // DESTINATION MARKER
@@ -172,11 +139,7 @@ fun MapScreen(
             position = destinationPoint
             title = "Destination: ${trip.destination}"
             snippet = "Trip #${trip.id}"
-
-            setAnchor(
-                Marker.ANCHOR_CENTER,
-                Marker.ANCHOR_BOTTOM
-            )
+            setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
         }
 
         mapView.overlays.add(vehicleMarker)
@@ -185,13 +148,9 @@ fun MapScreen(
         // FETCH ROAD ROUTE
         routeMessage = "Loading road route..."
 
-        val routePoints = fetchRoadRoute(
-            startPoint,
-            destinationPoint
-        )
+        val routePoints = fetchRoadRoute(startPoint, destinationPoint)
 
         if (routePoints.size >= 2) {
-
             val routeLine = Polyline().apply {
                 setPoints(routePoints)
                 title = "Trip #${trip.id} Route"
@@ -200,26 +159,18 @@ fun MapScreen(
             }
 
             mapView.overlays.add(routeLine)
-
             routeMessage = "Road route loaded successfully."
 
             val allPoints = routePoints + startPoint + destinationPoint
-
             mapView.zoomToBoundingBox(
                 BoundingBox.fromGeoPoints(allPoints),
                 true,
                 100
             )
-
         } else {
-
-            routeMessage =
-                "Unable to retrieve the road route. Check your internet connection or routing service."
-
+            routeMessage = "Unable to retrieve the road route. Check your internet connection or routing service."
             mapView.zoomToBoundingBox(
-                BoundingBox.fromGeoPoints(
-                    listOf(startPoint, destinationPoint)
-                ),
+                BoundingBox.fromGeoPoints(listOf(startPoint, destinationPoint)),
                 true,
                 100
             )
@@ -231,18 +182,20 @@ fun MapScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text("Fleet Map")
-                },
+                title = { Text("Fleet Map") },
                 navigationIcon = {
                     IconButton(
                         onClick = {
-                            navController.popBackStack()
+                            // ADDED: Return directly to Dashboard
+                            navController.navigate("dashboard") {
+                                popUpTo("dashboard") { inclusive = false }
+                                launchSingleTop = true
+                            }
                         }
                     ) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back to Dashboard"
                         )
                     }
                 }
@@ -257,11 +210,7 @@ fun MapScreen(
                 .padding(12.dp)
                 .clipToBounds()
         ) {
-
-            // =====================================
             // TRIP INFORMATION — TOP 45%
-            // =====================================
-
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -269,21 +218,15 @@ fun MapScreen(
                     .verticalScroll(rememberScrollState())
                     .clipToBounds()
             ) {
-
                 // TRIP SELECTOR
-                Box(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-
+                Box(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
                         value = selectedTrip?.let {
                             "Trip #${it.id}: ${it.startPoint} → ${it.destination}"
                         } ?: "No trips available",
                         onValueChange = {},
                         readOnly = true,
-                        label = {
-                            Text("Select Trip")
-                        },
+                        label = { Text("Select Trip") },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = trips.isNotEmpty()
                     )
@@ -294,33 +237,23 @@ fun MapScreen(
                                 .fillMaxWidth()
                                 .height(65.dp)
                                 .align(Alignment.Center)
-                                .clickable {
-                                    expanded = true
-                                }
+                                .clickable { expanded = true }
                         )
                     }
 
                     DropdownMenu(
                         expanded = expanded,
-                        onDismissRequest = {
-                            expanded = false
-                        }
+                        onDismissRequest = { expanded = false }
                     ) {
                         trips.forEach { trip ->
-
                             DropdownMenuItem(
                                 text = {
                                     Column {
-                                        Text(
-                                            "Trip #${trip.id}",
-                                            fontWeight = FontWeight.Bold
-                                        )
-
+                                        Text("Trip #${trip.id}", fontWeight = FontWeight.Bold)
                                         Text(
                                             "${trip.startPoint} → ${trip.destination}",
                                             fontSize = 12.sp
                                         )
-
                                         Text(
                                             "${trip.date} | ${trip.status}",
                                             fontSize = 11.sp
@@ -340,47 +273,19 @@ fun MapScreen(
 
                 // TRIP DETAILS
                 selectedTrip?.let { trip ->
-
-                    Card(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
+                    Card(modifier = Modifier.fillMaxWidth()) {
                         Column(
                             modifier = Modifier.padding(12.dp),
                             verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-
-                            Text(
-                                "Trip Information",
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            Text(
-                                "Vehicle: ${selectedVehicle?.vehicleId ?: "Unknown"}"
-                            )
-
-                            Text(
-                                "Driver: ${trip.driverName}"
-                            )
-
-                            Text(
-                                "Description: ${trip.description.ifBlank { "None" }}"
-                            )
-
-                            Text(
-                                "Starting Point: ${trip.startPoint}"
-                            )
-
-                            Text(
-                                "Destination: ${trip.destination}"
-                            )
-
-                            Text(
-                                "Scheduled Date: ${trip.date}"
-                            )
-
-                            Text(
-                                "Status: ${trip.status}"
-                            )
+                            Text("Trip Information", fontWeight = FontWeight.Bold)
+                            Text("Vehicle: ${selectedVehicle?.vehicleId ?: "Unknown"}")
+                            Text("Driver: ${trip.driverName}")
+                            Text("Description: ${trip.description.ifBlank { "None" }}")
+                            Text("Starting Point: ${trip.startPoint}")
+                            Text("Destination: ${trip.destination}")
+                            Text("Scheduled Date: ${trip.date}")
+                            Text("Status: ${trip.status}")
                         }
                     }
                 }
@@ -397,25 +302,17 @@ fun MapScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // =====================================
             // MAP — BOTTOM 55%
-            // =====================================
-
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(0.55f, fill = true)
                     .clipToBounds()
             ) {
-
                 AndroidView(
-                    factory = {
-                        mapView
-                    },
+                    factory = { mapView },
                     modifier = Modifier.fillMaxSize(),
-                    update = {
-                        it.onResume()
-                    }
+                    update = { it.onResume() }
                 )
 
                 Text(
@@ -424,9 +321,7 @@ fun MapScreen(
                     color = Color.DarkGray,
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
-                        .background(
-                            Color.White.copy(alpha = 0.85f)
-                        )
+                        .background(Color.White.copy(alpha = 0.85f))
                         .padding(4.dp)
                 )
             }
@@ -434,20 +329,10 @@ fun MapScreen(
     }
 }
 
-// =====================================
 // VEHICLE ICON
-// =====================================
-
 fun createVehicleIcon(context: Context): BitmapDrawable {
-
     val size = 128
-
-    val bitmap = Bitmap.createBitmap(
-        size,
-        size,
-        Bitmap.Config.ARGB_8888
-    )
-
+    val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
     val canvas = Canvas(bitmap)
 
     val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -455,34 +340,20 @@ fun createVehicleIcon(context: Context): BitmapDrawable {
         textAlign = Paint.Align.CENTER
     }
 
-    canvas.drawText(
-        "🚚",
-        size / 2f,
-        100f,
-        paint
-    )
+    canvas.drawText("🚚", size / 2f, 100f, paint)
 
-    return BitmapDrawable(
-        context.resources,
-        bitmap
-    )
+    return BitmapDrawable(context.resources, bitmap)
 }
 
-// =====================================
 // OSRM ROAD ROUTE FETCHING
-// =====================================
-
 suspend fun fetchRoadRoute(
     start: GeoPoint,
     end: GeoPoint
 ): List<GeoPoint> {
-
     return withContext(Dispatchers.IO) {
-
         var connection: HttpURLConnection? = null
 
         try {
-
             val urlString =
                 "https://router.project-osrm.org/route/v1/driving/" +
                         "${start.longitude},${start.latitude};" +
@@ -490,9 +361,7 @@ suspend fun fetchRoadRoute(
                         "?overview=full&geometries=geojson"
 
             val url = URL(urlString)
-
             connection = url.openConnection() as HttpURLConnection
-
             connection.requestMethod = "GET"
             connection.connectTimeout = 15000
             connection.readTimeout = 15000
@@ -506,12 +375,7 @@ suspend fun fetchRoadRoute(
                 return@withContext emptyList()
             }
 
-            val response = connection.inputStream
-                .bufferedReader()
-                .use {
-                    it.readText()
-                }
-
+            val response = connection.inputStream.bufferedReader().use { it.readText() }
             val json = JSONObject(response)
 
             if (json.optString("code") != "Ok") {
@@ -519,7 +383,6 @@ suspend fun fetchRoadRoute(
             }
 
             val routes = json.getJSONArray("routes")
-
             if (routes.length() == 0) {
                 return@withContext emptyList()
             }
@@ -532,24 +395,16 @@ suspend fun fetchRoadRoute(
             val routePoints = mutableListOf<GeoPoint>()
 
             for (i in 0 until coordinates.length()) {
-
                 val coordinate = coordinates.getJSONArray(i)
-
                 val longitude = coordinate.getDouble(0)
                 val latitude = coordinate.getDouble(1)
-
-                routePoints.add(
-                    GeoPoint(latitude, longitude)
-                )
+                routePoints.add(GeoPoint(latitude, longitude))
             }
 
             routePoints
-
         } catch (e: Exception) {
-
             e.printStackTrace()
             emptyList()
-
         } finally {
             connection?.disconnect()
         }
