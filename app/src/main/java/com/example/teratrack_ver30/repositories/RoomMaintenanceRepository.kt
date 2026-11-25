@@ -1,7 +1,6 @@
-package com.example.teratrack_ver30.data
+package com.example.teratrack_ver30.repositories
 import com.example.teratrack_ver30.data.MaintenanceDao
 import com.example.teratrack_ver30.data.MaintenanceEntity
-import com.example.teratrack_ver30.data.MaintenanceRepository
 
 // RoomMaintenanceRepository.kt
 class RoomMaintenanceRepository(private val dao: MaintenanceDao) : MaintenanceRepository {

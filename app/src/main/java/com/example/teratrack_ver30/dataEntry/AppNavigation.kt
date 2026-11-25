@@ -37,6 +37,8 @@ import com.example.teratrack_ver30.viewModel.MaintenanceViewModel
 import com.example.teratrack_ver30.viewModel.TripViewModel
 import com.example.teratrack_ver30.viewModel.VehicleViewModel
 
+//Creates ViewModel and define all the routes
+
 @Composable
 fun AppNavigation(userRepository: UserRepository) {
 

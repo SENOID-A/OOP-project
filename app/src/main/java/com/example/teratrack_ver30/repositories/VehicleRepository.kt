@@ -1,5 +1,6 @@
-package com.example.teratrack_ver30.data
+package com.example.teratrack_ver30.repositories
 
+import com.example.teratrack_ver30.data.VehicleEntity
 import kotlinx.coroutines.flow.Flow
 
 // Interface for Abstraction (SOLID - Dependency Inversion Principle)

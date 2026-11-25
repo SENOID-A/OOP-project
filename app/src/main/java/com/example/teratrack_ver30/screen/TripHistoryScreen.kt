@@ -1,4 +1,3 @@
-
 package com.example.teratrack_ver30.screen
 
 import androidx.compose.foundation.background
@@ -30,6 +29,7 @@ fun TripHistoryScreen(
     val trips by tripVm.trips.collectAsState()
     val vehicles by vehicleVm.vehicles.collectAsState()
     var showDialogForId by remember { mutableStateOf<Int?>(null) }
+    var showDeleteDialogForId by remember { mutableStateOf<Int?>(null) }
     val backgroundGray = Color(0xFFD9D9D9)
 
     Column(Modifier.fillMaxSize().background(backgroundGray).padding(16.dp).padding(top = 32.dp)) {
@@ -77,7 +77,7 @@ fun TripHistoryScreen(
                                 }
                             }
                         }
-                        IconButton(onClick = { tripVm.delete(trip) }) {
+                        IconButton(onClick = { showDeleteDialogForId = trip.id }) {
                             Icon(Icons.Default.Delete, contentDescription = "Delete")
                         }
                     }
@@ -96,6 +96,23 @@ fun TripHistoryScreen(
                         },
                         dismissButton = {
                             TextButton(onClick = { showDialogForId = null }) { Text("No") }
+                        }
+                    )
+                }
+
+                if (showDeleteDialogForId == trip.id) {
+                    AlertDialog(
+                        onDismissRequest = { showDeleteDialogForId = null },
+                        title = { Text("Confirm") },
+                        text = { Text("Are you sure you want to delete this trip?") },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                tripVm.delete(trip)
+                                showDeleteDialogForId = null
+                            }) { Text("Yes") }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showDeleteDialogForId = null }) { Text("No") }
                         }
                     )
                 }

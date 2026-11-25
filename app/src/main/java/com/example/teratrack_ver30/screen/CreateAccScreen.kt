@@ -10,7 +10,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.teratrack_ver30.repository.UserRepository
-import com.example.teratrack_ver30.user.user.CreateAccount
+import com.example.teratrack_ver30.user.CreateAccount
 import kotlinx.coroutines.launch
 
 @Composable

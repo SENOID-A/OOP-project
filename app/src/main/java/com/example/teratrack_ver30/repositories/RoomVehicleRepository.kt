@@ -1,5 +1,7 @@
-package com.example.teratrack_ver30.data
+package com.example.teratrack_ver30.repositories
 
+import com.example.teratrack_ver30.data.VehicleDao
+import com.example.teratrack_ver30.data.VehicleEntity
 import kotlinx.coroutines.flow.Flow
 
 // Implementation of the interface (Polymorphism)

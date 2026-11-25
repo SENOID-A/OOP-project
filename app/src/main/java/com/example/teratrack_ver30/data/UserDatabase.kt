@@ -16,7 +16,7 @@ import androidx.room3.RoomDatabase.Callback
         TripEntity::class,
         WarehouseEntity::class
     ],
-    version = 4, // <-- CHANGED TO 4
+    version = 5, // <-- CHANGED TO 4
     exportSchema = false
 )
 abstract class UserDatabase : RoomDatabase() {
@@ -49,7 +49,8 @@ abstract class UserDatabase : RoomDatabase() {
                             ('J&T Calamba DC', 'Laguna', 14.2091219, 121.1554600),
                             ('J&T Batangas DC', 'Batangas', 14.0894929, 121.1368192),
                             ('J&T Main Warehouse Taytay', 'Rizal', 14.564637, 121.121234),
-                            ('J&T Express Lucena DH3', 'Quezon', 13.9444088, 121.6122594)
+                            ('J&T Express Lucena DH3', 'Quezon', 13.9444088, 121.6122594),
+                            ('Your Warehouse Name', 'Province', 14.0000000, 121.0000000)
                         """.trimIndent()
 
                             connection.prepare(query).use { statement ->

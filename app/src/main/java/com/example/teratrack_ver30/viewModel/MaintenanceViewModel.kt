@@ -3,7 +3,7 @@ package com.example.teratrack_ver30.viewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.teratrack_ver30.data.MaintenanceEntity
-import com.example.teratrack_ver30.data.MaintenanceRepository
+import com.example.teratrack_ver30.repositories.MaintenanceRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch

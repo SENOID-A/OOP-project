@@ -1,4 +1,3 @@
-
 package com.example.teratrack_ver30.screen
 
 import androidx.compose.foundation.background
@@ -30,6 +29,7 @@ fun MaintenanceHistoryScreen(
     val records by maintenanceVm.maintenanceRecords.collectAsState()
     val vehicles by vehicleVm.vehicles.collectAsState()
     var showDialogForId by remember { mutableStateOf<Int?>(null) }
+    var showDeleteDialogForId by remember { mutableStateOf<Int?>(null) }
     val backgroundGray = Color(0xFFD9D9D9)
 
     Column(Modifier.fillMaxSize().background(backgroundGray).padding(16.dp).padding(top = 32.dp)) {
@@ -75,7 +75,7 @@ fun MaintenanceHistoryScreen(
                                 }
                             }
                         }
-                        IconButton(onClick = { maintenanceVm.delete(record) }) {
+                        IconButton(onClick = { showDeleteDialogForId = record.id }) {
                             Icon(Icons.Default.Delete, contentDescription = "Delete")
                         }
                     }
@@ -94,6 +94,23 @@ fun MaintenanceHistoryScreen(
                         },
                         dismissButton = {
                             TextButton(onClick = { showDialogForId = null }) { Text("No") }
+                        }
+                    )
+                }
+
+                if (showDeleteDialogForId == record.id) {
+                    AlertDialog(
+                        onDismissRequest = { showDeleteDialogForId = null },
+                        title = { Text("Confirm") },
+                        text = { Text("Are you sure you want to delete this maintenance record?") },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                maintenanceVm.delete(record)
+                                showDeleteDialogForId = null
+                            }) { Text("Yes") }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showDeleteDialogForId = null }) { Text("No") }
                         }
                     )
                 }

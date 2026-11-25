@@ -2,7 +2,7 @@ package com.example.teratrack_ver30.repository
 
 import com.example.teratrack_ver30.data.UserDao
 import com.example.teratrack_ver30.data.UserEntity
-import com.example.teratrack_ver30.user.user.CreateAccount
+import com.example.teratrack_ver30.user.CreateAccount
 
 //Set the Contracts of the Repository
 interface UserRepository {
@@ -14,35 +14,37 @@ interface UserRepository {
 
 class RoomUserRepository(private val userDao: UserDao) : UserRepository {
 
-    // CREATE
+    // CREATE: store the hash and salt, never the plain password
     override suspend fun createUser(user: CreateAccount) {
         val dbUser = UserEntity(
             username = user.username,
-            password = user.getPasswordForDb(),
+            passwordHash = user.passwordHash,
+            salt = user.salt,
             favouriteWord = user.favouriteWord
         )
         userDao.save(dbUser)
     }
 
-    // READ
+    // READ: rebuild the account from the stored hash and salt
     override suspend fun getUser(username: String): CreateAccount? {
         val dbUser = userDao.find(username) ?: return null
         val account = CreateAccount(dbUser.username, dbUser.favouriteWord)
-        account.enterPassword(dbUser.password)
+        account.restoreHash(dbUser.passwordHash, dbUser.salt)
         return account
     }
 
-    // First, we search the database for the user. If they don't exist, we return false (meaning the update failed).
+    // UPDATE: validate and hash the new password with a new salt, then save
     override suspend fun updateUserPassword(username: String, newPassword: String): Boolean {
         val existingUser = userDao.find(username) ?: return false
 
-        // Create a temporary OOP object to validate the new password using your OOP rules
         val tempAccount = CreateAccount(username, existingUser.favouriteWord)
         val validationResult = tempAccount.enterPassword(newPassword)
 
         if (validationResult == "Password set successfully") {
-            // Save the updated entity to Room
-            val updatedEntity = existingUser.copy(password = tempAccount.getPasswordForDb())
+            val updatedEntity = existingUser.copy(
+                passwordHash = tempAccount.passwordHash,
+                salt = tempAccount.salt
+            )
             userDao.update(updatedEntity)
             return true
         }

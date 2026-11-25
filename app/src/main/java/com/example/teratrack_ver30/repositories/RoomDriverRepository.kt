@@ -1,5 +1,7 @@
-package com.example.teratrack_ver30.data
+package com.example.teratrack_ver30.repositories
 
+import com.example.teratrack_ver30.data.DriverDao
+import com.example.teratrack_ver30.data.DriverEntity
 import kotlinx.coroutines.flow.Flow
 
 class RoomDriverRepository(private val dao: DriverDao) : DriverRepository {

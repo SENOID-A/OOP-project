@@ -97,8 +97,31 @@ fun DriverListScreen(
                             }
                         }
 
-                        IconButton(onClick = { driverVm.delete(driver) }) {
+//                        IconButton(onClick = { driverVm.delete(driver) }) {
+//                            Icon(Icons.Default.Delete, contentDescription = "Delete")
+//                        }
+
+                        var showDeleteDialogForId by remember { mutableStateOf<Int?>(null) }
+
+                        IconButton(onClick = { showDeleteDialogForId = driver.id }) {
                             Icon(Icons.Default.Delete, contentDescription = "Delete")
+                        }
+
+                        if (showDeleteDialogForId == driver.id) {
+                            AlertDialog(
+                                onDismissRequest = { showDeleteDialogForId = null },
+                                title = { Text("Confirm") },
+                                text = { Text("Are you sure you want to delete driver ${driver.name}?") },
+                                confirmButton = {
+                                    TextButton(onClick = {
+                                        driverVm.delete(driver)
+                                        showDeleteDialogForId = null
+                                    }) { Text("Yes") }
+                                },
+                                dismissButton = {
+                                    TextButton(onClick = { showDeleteDialogForId = null }) { Text("No") }
+                                }
+                            )
                         }
                     }
                 }

@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.teratrack_ver30.viewModel.VehicleViewModel
+import androidx.compose.runtime.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,8 +71,34 @@ fun VehicleListScreen(navController: NavController, vm: VehicleViewModel) {
                             Text("Driver: ${vehicle.driverName ?: "Unassigned"}")
                         }
 
-                        IconButton(onClick = { vm.delete(vehicle) }) {
+//                        IconButton(onClick = { vm.delete(vehicle) }) {
+//                            Icon(Icons.Default.Delete, contentDescription = "Delete")
+//                        }
+
+
+
+                        var showDeleteDialogForId by remember { mutableStateOf<Int?>(null) }
+
+                        IconButton(onClick = { showDeleteDialogForId = vehicle.id }) {
                             Icon(Icons.Default.Delete, contentDescription = "Delete")
+                        }
+
+                        // after the Card, inside items(vehicles) { vehicle -> ... }
+                        if (showDeleteDialogForId == vehicle.id) {
+                            AlertDialog(
+                                onDismissRequest = { showDeleteDialogForId = null },
+                                title = { Text("Confirm") },
+                                text = { Text("Delete vehicle ${vehicle.vehicleId}? Its trips and maintenance records will also be deleted.") },
+                                confirmButton = {
+                                    TextButton(onClick = {
+                                        vm.delete(vehicle)
+                                        showDeleteDialogForId = null
+                                    }) { Text("Yes") }
+                                },
+                                dismissButton = {
+                                    TextButton(onClick = { showDeleteDialogForId = null }) { Text("No") }
+                                }
+                            )
                         }
                     }
                 }

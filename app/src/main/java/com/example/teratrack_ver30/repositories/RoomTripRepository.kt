@@ -1,7 +1,6 @@
-package com.example.teratrack_ver30.data
+package com.example.teratrack_ver30.repositories
 import com.example.teratrack_ver30.data.TripDao
 import com.example.teratrack_ver30.data.TripEntity
-import com.example.teratrack_ver30.data.TripRepository
 
 // RoomTripRepository.kt
 class RoomTripRepository(private val dao: TripDao) : TripRepository {
