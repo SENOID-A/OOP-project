@@ -10,6 +10,7 @@ import com.example.teratrack_ver30.repository.RoomUserRepository
 import com.example.teratrack_ver30.repository.UserRepository
 import com.example.teratrack_ver30.ui.theme.Teratrack_ver30Theme
 
+
 class MainActivity : ComponentActivity() {
 
     // 1. Declare the repository
@@ -30,6 +31,5 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // 4. The Room DB Logic for Login
 
 }
